@@ -33,7 +33,9 @@ class CreateMarketplaceRoles implements DataPatchInterface, PatchRevertableInter
     public const ROLE_INTEGRATOR = 'Intégrateur Marketplace';
     public const ROLE_ADMIN = 'Administrateur Marketplace';
 
-    private const RESOURCES_INTEGRATOR = [
+    /** Ressources de l'intégrateur : visibilité publique pour être étendues par un patch ultérieur
+     *  (voir GrantNotificationsResourceToIntegrator) sans jamais modifier ce patch déjà appliqué. */
+    public const RESOURCES_INTEGRATOR = [
         'Magento_Backend::admin',
         'Magento_Catalog::catalog',
         'Magento_Catalog::catalog_inventory',

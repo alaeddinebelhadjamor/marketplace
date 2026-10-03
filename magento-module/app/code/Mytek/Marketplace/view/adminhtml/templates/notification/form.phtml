@@ -1,0 +1,59 @@
+<?php
+/** @var \Mytek\Marketplace\Block\Adminhtml\Notification\Form $block */
+/** @var \Magento\Framework\Escaper $escaper */
+$sellers = $block->getSellers();
+$formKey = $block->getFormKey();
+?>
+<div class="mk-readonly">
+    <?= $escaper->escapeHtml(__(
+        'This creates a notification claim for the seller, exactly like the daily order sync does (ch. 2, case 2.17).'
+    )) ?>
+</div>
+
+<form method="post" action="<?= $escaper->escapeUrl($block->getSendUrl()) ?>" class="mk-form" enctype="multipart/form-data">
+    <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($formKey) ?>"/>
+
+    <fieldset class="admin__fieldset">
+        <legend class="admin__legend"><span><?= $escaper->escapeHtml(__('Notification')) ?></span></legend>
+
+        <div class="admin__field _required">
+            <label class="admin__field-label" for="mk-seller_id"><span><?= $escaper->escapeHtml(__('Seller')) ?></span></label>
+            <div class="admin__field-control">
+                <select id="mk-seller_id" name="seller_id" class="admin__control-select" required>
+                    <option value=""><?= $escaper->escapeHtml(__('— Choose a seller —')) ?></option>
+                    <?php foreach ($sellers as $s): ?>
+                        <option value="<?= (int)$s['seller_id'] ?>">
+                            <?= $escaper->escapeHtml($s['shop_title'] . ' — ' . $s['firstname'] . ' ' . $s['lastname'] . ' (' . $s['email'] . ')') ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <?php if (!$sellers): ?>
+                    <div class="mk-readonly"><?= $escaper->escapeHtml(__('No approved seller yet.')) ?></div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <div class="admin__field _required">
+            <label class="admin__field-label" for="mk-message"><span><?= $escaper->escapeHtml(__('Message')) ?></span></label>
+            <div class="admin__field-control">
+                <textarea id="mk-message" name="message" class="admin__control-textarea" required maxlength="5000"
+                          placeholder="<?= $escaper->escapeHtmlAttr(__('Write the notification sent to the seller…')) ?>"></textarea>
+            </div>
+        </div>
+
+        <div class="admin__field">
+            <label class="admin__field-label" for="mk-attachments"><span><?= $escaper->escapeHtml(__('Attachments')) ?></span></label>
+            <div class="admin__field-control">
+                <input type="file" id="mk-attachments" name="attachments[]" multiple
+                       accept="<?= $escaper->escapeHtmlAttr(\Mytek\Marketplace\Block\Adminhtml\Notification\Form::ACCEPTED_EXTENSIONS) ?>"/>
+                <div class="mk-readonly">
+                    <?= $escaper->escapeHtml(__('Up to %1 files, 10 MB each.', \Mytek\Marketplace\Block\Adminhtml\Notification\Form::MAX_FILES)) ?>
+                </div>
+            </div>
+        </div>
+    </fieldset>
+
+    <div class="mk-actions">
+        <button type="submit" class="action-default action-primary"><?= $escaper->escapeHtml(__('Send')) ?></button>
+    </div>
+</form>

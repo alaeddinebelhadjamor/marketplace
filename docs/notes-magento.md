@@ -130,3 +130,35 @@ validation des noms de fichiers et des types MIME, contrôle de propriété d'un
 | I7 | Administrateur | Marketplace > Validation vendeurs | 200 (autorisé) | 200 |
 
 Tous validés.
+
+## Incrément 3 — écran admin « Envoyer une notification »
+
+### Changements
+
+- **Écart 3 de l'audit (aucun écran pour notifier un vendeur, cas 2.17)** : corrigé. Nouvel
+  écran Marketplace > Envoyer une notification (ACL `Mytek_Marketplace::notifications`),
+  accessible à l'intégrateur et à l'administrateur (décision X4 : l'intégrateur doit pouvoir
+  le faire, pas seulement l'API). Formulaire : vendeur (liste des vendeurs validés), message,
+  pièces jointes multiples.
+- Le contrôleur (`Controller\Adminhtml\Notification\Send`) ne crée rien lui-même : il appelle
+  `POST /api/admin/notifications` de l'API v2 via `Model\Notification\NotificationService`,
+  exactement la route qu'utilise déjà la synchronisation quotidienne des commandes
+  (`sendSellerNotification`). Même mécanisme, juste un nouveau point d'entrée humain.
+- Nouveau data patch `GrantNotificationsResourceToIntegrator`, dépendant de
+  `CreateMarketplaceRoles` : accorde la ressource à l'intégrateur sans modifier le patch déjà
+  appliqué (bonne pratique : un data patch déjà exécuté ne se modifie pas, on en ajoute un
+  nouveau qui en dépend).
+
+### Tests
+
+41 tests unitaires (8 nouveaux) : normalisation des fichiers envoyés (`UploadedFilesReader`,
+y compris le rejet d'un chemin qui ne serait pas un vrai fichier téléversé, et des erreurs
+d'envoi), service de notification (vendeur introuvable, appel API correct, erreur API
+convertie en message lisible).
+
+### Recette
+
+| # | Étape | Résultat attendu | Obtenu |
+|---|---|---|---|
+| C1 | Connexion intégrateur, Marketplace > Envoyer une notification | Écran accessible (200), liste des vendeurs validés | Validé |
+| C2 | Choisir un vendeur, écrire un message, Envoyer | Message de succès, réclamation de type 0 créée (vérifié en base : `admin_viewed=1`, `vendeur_viewed=0`, message conservé) | Validé |
