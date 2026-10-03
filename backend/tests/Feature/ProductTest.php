@@ -86,7 +86,9 @@ describe('Consulter ses produits (tab. 2.6)', function () {
         $seller = actingAsSeller();
         Http::preventStrayRequests();
         Http::fake([
-            OPENSEARCH.'/_cat/indices/*' => Http::response("opensearch_index_2\nopensearch_index_1\n"),
+            // OpenSearch répond à _cat en JSON dès que le client envoie Accept: application/json
+            // (acceptJson(), toujours actif ici) : [{"index": "..."}, ...], pas du texte tabulaire.
+            OPENSEARCH.'/_cat/indices/*' => Http::response([['index' => 'opensearch_index_2'], ['index' => 'opensearch_index_1']]),
             OPENSEARCH.'/opensearch_index_2/_search' => Http::response(['hits' => ['total' => ['value' => 1], 'hits' => [
                 ['_source' => ['sku' => 'A1', 'name' => 'Produit A', 'price' => '120', 'special_price' => '99', 'status' => 1, 'image' => '/a/a1.jpg', 'url_key' => 'produit-a']],
             ]]]),

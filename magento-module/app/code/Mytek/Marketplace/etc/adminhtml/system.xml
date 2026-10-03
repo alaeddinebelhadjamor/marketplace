@@ -37,6 +37,20 @@
                     <validate>required-entry validate-url</validate>
                 </field>
             </group>
+
+            <group id="search" translate="label comment" sortOrder="30" showInDefault="1">
+                <label>Marketplace search index</label>
+                <comment>Separate OpenSearch index read by the seller space (ch. 4 § 4.1), distinct from Magento's own catalog search index.</comment>
+                <field id="opensearch_url" translate="label" type="text" sortOrder="10" showInDefault="1">
+                    <label>OpenSearch base URL</label>
+                    <validate>required-entry validate-url</validate>
+                </field>
+                <field id="index_prefix" translate="label comment" type="text" sortOrder="20" showInDefault="1">
+                    <label>Index prefix</label>
+                    <comment>Must match OPENSEARCH_INDEX_PATTERN on the v2 API (default "opensearch_index").</comment>
+                    <validate>required-entry</validate>
+                </field>
+            </group>
         </section>
     </system>
 </config>

@@ -337,3 +337,77 @@ La tâche planifiée tourne toutes les 15 minutes : un changement de gouvernorat
 ou un produit nouvellement rattaché à un vendeur, met jusqu'à 15 minutes à apparaître dans la
 facette (plus le délai du prochain cycle de réindexation catalogue, déjà présent nativement
 dans Magento). La commande CLI permet de forcer une synchronisation immédiate si besoin.
+
+## Incrément 7 — index OpenSearch de la marketplace
+
+### Changements
+
+- **Contradiction X1 de l'audit (ch. 2 tab. 2.12, ch. 4 § 4.1 : l'activation d'un produit
+  devait l'indexer dans OpenSearch, pour un index `opensearch_index_*` qui n'existait nulle
+  part)** : corrigé. Le module crée et alimente désormais cet index, exactement celui que lit
+  déjà l'espace vendeur v2 (`OpenSearchService::latestIndex()`), sans aucune modification de
+  la v2 pour le faire lire — hors un correctif de bogue décrit plus bas.
+- **Reconstruction complète** (`Model\Search\MarketplaceIndexer::rebuildFull`, commande
+  `bin/magento mytek:marketplace:reindex-opensearch`) : index horodaté
+  (`opensearch_index_<AAAAMMJJHHiiss>`), rempli avec les produits **actifs portant un
+  vendeur** (décision X1 : « l'index ne contient que les produits actifs »), puis les anciens
+  index du même préfixe sont supprimés — même principe de bascule sans interruption que
+  l'indexeur natif de Magento, déjà observé sur ce projet (`magento2_product_1_v3` → `v4`).
+- **Mise à jour incrémentale « aussitôt »** (ch. 2 § 2.6.4) : deux observateurs,
+  `catalog_product_save_after` (indexe ou retire selon le statut et le vendeur) et
+  `catalog_product_delete_after` (retire), agissant sur l'index courant sans reconstruction
+  complète. Un échec d'indexation incrémentale (OpenSearch injoignable) est journalisé mais
+  n'empêche jamais l'enregistrement du produit dans l'admin ; la tâche planifiée horaire
+  (`Cron\RebuildOpenSearchIndex`) rattrape ce cas en filet de sécurité.
+- Mapping dynamique d'OpenSearch (aucun mapping explicite créé) : les champs `sku`/`name`
+  deviennent automatiquement `text` + sous-champ `.keyword` (nécessaire au filtre `wildcard`
+  de la v2), `seller_id`/`status`/les prix des nombres — vérifié a posteriori contre
+  l'instance réelle.
+- Adresse d'OpenSearch et préfixe d'index configurables (Stores > Configuration > Mytek >
+  Marketplace > Marketplace search index), par défaut `http://localhost:9201` /
+  `opensearch_index`, à faire correspondre à `OPENSEARCH_INDEX_PATTERN` côté v2.
+
+### Bogue découvert et corrigé dans la v2 (hors module, documenté ici car découvert par cet
+incrément)
+
+En vérifiant que l'espace vendeur lisait bien le nouvel index, la toute première recherche
+réelle contre un index OpenSearch existant (jusqu'ici toujours absent, donc jamais exercée)
+a révélé un bogue latent dans `OpenSearchService::latestIndex()`
+(`backend/app/Services/Search/OpenSearchService.php`) : la méthode suppose que `_cat/indices`
+répond en texte tabulaire, alors que le client HTTP partagé envoie `Accept: application/json`
+(`acceptJson()`) — ce qui fait répondre OpenSearch **en JSON** (`[{"index":"..."}]`). Le code
+découpait alors la première ligne de ce JSON et renvoyait littéralement le JSON entier comme
+« nom d'index », provoquant une erreur Guzzle (« Invalid URI template expression ») dès le
+premier appel de recherche contre un index réel. Corrigé : `latestIndex()` lit maintenant le
+format JSON explicitement (`format=json` en paramètre, décodage structuré), plus robuste que
+l'ancien découpage de texte. Un test existant (`ProductTest.php`) simulait l'ancien format
+texte, jamais conforme au comportement réel d'OpenSearch ; corrigé pour simuler le format JSON
+réel. **128 tests Pest toujours au vert** après correction (127 avant correction du test, 1 en
+échec le temps du diagnostic). Les 27 tests Vitest du frontend n'ont pas pu être rejoués dans
+cette session (Node système de l'environnement WSL en version 12, trop ancienne pour Vitest —
+limite d'environnement sans rapport avec ce changement, qui ne touche aucun fichier frontend).
+
+### Tests
+
+77 tests unitaires du module (9 nouveaux) : `ProductDocumentMapper` (tous les champs,
+valeurs manquantes, prix promotionnel vide) et `OpenSearchIndexClient` (listage, bulk NDJSON,
+suppression tolérant les 404, erreurs HTTP). `MarketplaceIndexer` lui-même (couplé aux
+collections Magento et au client HTTP) vérifié en recette, comme les autres services du module
+dans ce cas de figure.
+
+### Recette
+
+| # | Étape | Résultat attendu | Obtenu |
+|---|---|---|---|
+| J1 | `bin/magento mytek:marketplace:reindex-opensearch` | Nouvel index créé, 436 produits (480 − 44 désactivés) | Conforme |
+| J2 | Requête directe OpenSearch, filtre `seller_id` | Nombre de documents = produits actifs de ce vendeur (ex. vendeur 4 : 181 = 197 − 16 désactivés) | Conforme |
+| J3 | Recherche réelle via l'API v2 (inscription, rattachement d'un produit, validation, connexion, recherche) | `"source":"opensearch"` (plus de repli Magento) | Conforme, après correction du bogue |
+| J4 | Activer un produit désactivé dans l'admin (sans relancer la commande CLI) | Apparaît aussitôt dans l'index courant | Conforme |
+| J5 | Désactiver ce même produit | Retiré aussitôt de l'index | Conforme |
+| J6 | Suite Pest complète (128 tests) | Verte | Conforme |
+
+### Limite assumée
+
+Les 27 tests Vitest n'ont pas été rejoués (Node système WSL trop ancien pour Vitest,
+limite d'environnement préexistante). Aucun fichier frontend n'a été modifié dans cet
+incrément ni dans la correction de bogue ; le risque de régression y est nul.

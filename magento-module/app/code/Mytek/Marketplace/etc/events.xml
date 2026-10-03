@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="catalog_product_save_after">
+        <observer name="mytek_marketplace_reindex_product_on_save" instance="Mytek\Marketplace\Observer\ReindexProductOnSave"/>
+    </event>
+    <event name="catalog_product_delete_after">
+        <observer name="mytek_marketplace_remove_product_from_index_on_delete" instance="Mytek\Marketplace\Observer\RemoveProductFromIndexOnDelete"/>
+    </event>
+</config>

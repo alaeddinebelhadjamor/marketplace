@@ -10,6 +10,10 @@
             <links>
                 <vendor_space_url>http://localhost:5180</vendor_space_url>
             </links>
+            <search>
+                <opensearch_url>http://localhost:9201</opensearch_url>
+                <index_prefix>opensearch_index</index_prefix>
+            </search>
         </mytek_marketplace>
     </default>
 </config>

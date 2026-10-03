@@ -4,6 +4,7 @@
         <arguments>
             <argument name="commands" xsi:type="array">
                 <item name="mytek_marketplace_sync_seller_governorate" xsi:type="object">Mytek\Marketplace\Console\Command\SyncSellerGovernorate</item>
+                <item name="mytek_marketplace_reindex_opensearch" xsi:type="object">Mytek\Marketplace\Console\Command\ReindexOpenSearch</item>
             </argument>
         </arguments>
     </type>

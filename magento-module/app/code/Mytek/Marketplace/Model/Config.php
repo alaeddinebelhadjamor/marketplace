@@ -15,6 +15,8 @@ class Config
     public const XML_API_ADMIN_KEY = 'mytek_marketplace/api/admin_key';
     public const XML_API_TIMEOUT = 'mytek_marketplace/api/timeout';
     public const XML_VENDOR_SPACE_URL = 'mytek_marketplace/links/vendor_space_url';
+    public const XML_OPENSEARCH_URL = 'mytek_marketplace/search/opensearch_url';
+    public const XML_OPENSEARCH_INDEX_PREFIX = 'mytek_marketplace/search/index_prefix';
 
     public function __construct(
         private readonly ScopeConfigInterface $scopeConfig,
@@ -47,5 +49,15 @@ class Config
     public function getVendorSpaceUrl(): string
     {
         return trim((string)$this->scopeConfig->getValue(self::XML_VENDOR_SPACE_URL));
+    }
+
+    public function getOpenSearchUrl(): string
+    {
+        return rtrim(trim((string)$this->scopeConfig->getValue(self::XML_OPENSEARCH_URL)), '/');
+    }
+
+    public function getOpenSearchIndexPrefix(): string
+    {
+        return trim((string)$this->scopeConfig->getValue(self::XML_OPENSEARCH_INDEX_PREFIX));
     }
 }

@@ -18,13 +18,21 @@ class OpenSearchService
     public function latestIndex(): string
     {
         $pattern = config('marketplace.opensearch.index_pattern');
-        $response = $this->http()->get("_cat/indices/{$pattern}", ['h' => 'index', 's' => 'index:desc']);
+        // format=json explicite : le client HTTP partagé (acceptJson()) fait déjà répondre
+        // _cat en JSON plutôt qu'en texte tabulaire ; la correction ci-dessous lit ce format
+        // explicitement, au lieu de l'ancien découpage de la première ligne de texte (qui
+        // renvoyait littéralement le JSON entier comme "nom d'index" dès qu'un index réel
+        // existait — jamais exercé jusqu'ici, Magento/OpenSearch étant simulés dans les tests).
+        $response = $this->http()->get("_cat/indices/{$pattern}", [
+            'h' => 'index', 's' => 'index:desc', 'format' => 'json',
+        ]);
 
         if (! $response->successful()) {
             throw new RuntimeException('OpenSearch : liste des index indisponible (HTTP '.$response->status().').');
         }
 
-        $index = trim(strtok(trim($response->body()), "\n") ?: '');
+        $rows = $response->json();
+        $index = is_array($rows) && isset($rows[0]['index']) ? trim((string) $rows[0]['index']) : '';
         if ($index === '') {
             throw new RuntimeException("Aucun index OpenSearch ne correspond à {$pattern}.");
         }

@@ -6,5 +6,10 @@
         <job name="mytek_marketplace_sync_seller_governorate" instance="Mytek\Marketplace\Cron\SyncSellerGovernorate" method="execute">
             <schedule>*/15 * * * *</schedule>
         </job>
+        <!-- Filet de sécurité : l'observateur ReindexProductOnSave met déjà à jour l'index
+             marketplace à chaque enregistrement de produit (amélioration J). -->
+        <job name="mytek_marketplace_rebuild_opensearch_index" instance="Mytek\Marketplace\Cron\RebuildOpenSearchIndex" method="execute">
+            <schedule>0 * * * *</schedule>
+        </job>
     </group>
 </config>
