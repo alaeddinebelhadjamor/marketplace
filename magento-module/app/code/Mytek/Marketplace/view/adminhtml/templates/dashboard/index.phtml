@@ -9,7 +9,10 @@ $topViewed = $block->getTopViewedProducts();
 ?>
 <div class="mk-toolbar">
     <div class="mk-readonly"><?= $escaper->escapeHtml(__('Data consolidated from the marketplace database (orders synchronised from Magento).')) ?></div>
-    <a class="action-default action-primary" href="<?= $escaper->escapeUrl($block->getExportUrl()) ?>"><?= $escaper->escapeHtml(__('Export to Excel (CSV)')) ?></a>
+    <div class="mk-actions">
+        <a class="action-default" href="<?= $escaper->escapeUrl($block->getCommissionsUrl()) ?>"><?= $escaper->escapeHtml(__('Commissions and payout statements')) ?></a>
+        <a class="action-default action-primary" href="<?= $escaper->escapeUrl($block->getExportUrl()) ?>"><?= $escaper->escapeHtml(__('Export to Excel (CSV)')) ?></a>
+    </div>
 </div>
 
 <div class="mk-kpis">

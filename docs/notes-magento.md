@@ -201,3 +201,48 @@ réelles.
 | E3 | Produits en attente de modération | « 44 produit(s) de vendeur en attente de modération » | Conforme (identique au chiffre de l'audit) |
 | E4 | Dernière synchronisation | « Dernière synchronisation des commandes : 16/09/2026 18:10 », en avertissement (plus de 24 h) | Conforme |
 | L1 | Produits les plus vus | SKU IPH-11-128-YELLOW en tête, nom résolu (« iPhone 11 128G... »), vues correctes | Conforme |
+
+## Incrément 4b — export des commissions et relevés de paiement
+
+### Changements
+
+- **Écart 4 de l'audit (export des commissions absent du module, cas 2.18)** : corrigé.
+  Nouvel écran Marketplace > Commissions (ACL `Mytek_Marketplace::commissions`, **réservé à
+  l'administrateur** : ch. 2 § 2.1 réserve la supervision financière à l'administrateur, pas
+  à l'intégrateur — vérifié, 403 pour l'intégrateur).
+- **Lecture** (chiffre d'affaires par vendeur, taux effectif, relevés déjà générés) : calculée
+  directement depuis la base marketplace (tables `orders`, `commission_rates`,
+  `payout_statements`, déjà présentes grâce aux migrations de la v2), sans appel à l'API.
+  Nouveau `Model\Commission\CommissionRepository` et `OrderStats::getRevenueBySeller`.
+- **Écriture** (génération des relevés du mois, changement de taux, rendu PDF) : relayée vers
+  l'API v2 (`Model\Commission\CommissionAdminProxy`), qui porte seule cette logique (génération
+  idempotente, rendu DomPDF) — le module ne la duplique pas.
+- Export CSV natif du module (`Controller\Adminhtml\Commission\Export`), disponible même si
+  l'API v2 est arrêtée (ne dépend que de la base marketplace).
+- Lien « Commissions et relevés de paiement » ajouté au tableau de bord.
+
+### Tests
+
+55 tests unitaires (6 nouveaux, `CommissionAdminProxyTest`) : génération, changement de taux
+(y compris réinitialisation au taux par défaut), téléchargement de PDF, relevé introuvable,
+erreur API convertie en message lisible. `CommissionRepository` (requêtes SQL directes) non
+testé unitairement, comme les autres dépôts du module ; vérifié en recette.
+
+### Recette
+
+| # | Étape | Résultat attendu | Obtenu |
+|---|---|---|---|
+| D1 | Connexion intégrateur, Marketplace > Commissions | 403 (réservé à l'administrateur) | 403 |
+| D2 | Connexion administrateur, Marketplace > Commissions | 200, 5 vendeurs listés avec CA et commission | Conforme |
+| D3 | Export CSV | En-têtes corrects, une ligne par vendeur | Conforme |
+| D4 | Générer les relevés pour une période sans commande (octobre) | 0 relevé, pas d'erreur | Conforme (comportement normal de l'API) |
+| D5 | Générer les relevés pour septembre (données réelles) | 4 relevés créés, montants cohérents avec le CA par vendeur | Conforme (vérifié en base) |
+| D6 | Télécharger le PDF d'un relevé | 200, `application/pdf`, fichier non vide (880 Ko) | Conforme |
+| D7 | Changer le taux d'un vendeur à 8 % | Le tableau affiche 8,00 % pour ce vendeur | Conforme |
+
+### Limite connue
+
+La génération porte sur le mois civil en cours par défaut (bouton « Générer les relevés pour
+AAAA-MM ») : comme en recette, si aucune commande Magento n'a été synchronisée ce mois-ci
+(dernière synchronisation le 16 septembre 2026 sur ce poste), la génération répond
+normalement avec 0 relevé. Ce n'est pas une anomalie du module.

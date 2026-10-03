@@ -31,6 +31,24 @@ class Client
     }
 
     /**
+     * @param array<string, mixed> $json
+     * @throws ApiException
+     */
+    public function post(string $path, array $json = []): Response
+    {
+        return $this->send('POST', $path, ['json' => $json]);
+    }
+
+    /**
+     * @param array<string, mixed> $json
+     * @throws ApiException
+     */
+    public function put(string $path, array $json = []): Response
+    {
+        return $this->send('PUT', $path, ['json' => $json]);
+    }
+
+    /**
      * Envoi multipart/form-data.
      *
      * @param array<string, scalar> $fields

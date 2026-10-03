@@ -84,6 +84,11 @@ class Dashboard extends Template
         return $this->getUrl('mytek_marketplace/dashboard/export');
     }
 
+    public function getCommissionsUrl(): string
+    {
+        return $this->getUrl('mytek_marketplace/commission/index');
+    }
+
     public function getSortUrl(string $sort): string
     {
         return $this->getUrl('mytek_marketplace/dashboard/index', ['sort' => $sort]);

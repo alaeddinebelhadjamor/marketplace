@@ -1,0 +1,105 @@
+<?php
+/** @var \Mytek\Marketplace\Block\Adminhtml\Commission\Index $block */
+/** @var \Magento\Framework\Escaper $escaper */
+$sellers = $block->getSellerCommissions();
+$statements = $block->getStatements();
+$formKey = $block->getFormKey();
+?>
+<div class="mk-toolbar">
+    <div class="mk-readonly">
+        <?= $escaper->escapeHtml(__(
+            'Default rate 5% unless a seller has a custom rate (commission_rates table). Statement generation and PDF rendering are delegated to the v2 API.'
+        )) ?>
+    </div>
+    <a class="action-default action-primary" href="<?= $escaper->escapeUrl($block->getExportUrl()) ?>"><?= $escaper->escapeHtml(__('Export to Excel (CSV)')) ?></a>
+</div>
+
+<div class="mk-section-title">
+    <h2><?= $escaper->escapeHtml(__('Commissions by seller')) ?></h2>
+</div>
+<div class="admin__data-grid-wrap">
+    <table class="data-grid">
+        <thead>
+        <tr>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('Seller')) ?></th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('Shop')) ?></th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('Orders')) ?></th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('Revenue')) ?></th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('Rate')) ?></th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('Commission')) ?></th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('Change rate')) ?></th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php if (!$sellers): ?>
+            <tr><td colspan="7" class="empty-text"><?= $escaper->escapeHtml(__('No sale recorded yet.')) ?></td></tr>
+        <?php else: ?>
+            <?php foreach ($sellers as $s): ?>
+                <?php $vendorId = (int)$s['vendor_id']; ?>
+                <tr>
+                    <td><?= $escaper->escapeHtml(trim(($s['firstname'] ?? '') . ' ' . ($s['lastname'] ?? '')) ?: '#' . $vendorId) ?></td>
+                    <td><?= $escaper->escapeHtml((string)($s['shop_title'] ?? '—')) ?></td>
+                    <td><?= (int)$s['orders'] ?></td>
+                    <td><?= $escaper->escapeHtml($block->money((float)$s['revenue'])) ?></td>
+                    <td><?= $escaper->escapeHtml($block->ratePercent($s['rate'])) ?></td>
+                    <td><?= $escaper->escapeHtml($block->money($s['commission'])) ?></td>
+                    <td>
+                        <form method="post" action="<?= $escaper->escapeUrl($block->getSetRateUrl()) ?>" class="mk-rate-form">
+                            <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($formKey) ?>"/>
+                            <input type="hidden" name="seller_id" value="<?= $vendorId ?>"/>
+                            <input type="number" name="rate" step="0.01" min="0" max="50"
+                                   placeholder="<?= $escaper->escapeHtmlAttr(__('% (empty = default)')) ?>" style="width:9rem"/>
+                            <button type="submit" class="action-default"><?= $escaper->escapeHtml(__('Save')) ?></button>
+                        </form>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        <?php endif; ?>
+        </tbody>
+    </table>
+</div>
+
+<div class="mk-section-title">
+    <h2><?= $escaper->escapeHtml(__('Payout statements')) ?></h2>
+    <form method="post" action="<?= $escaper->escapeUrl($block->getGenerateUrl()) ?>">
+        <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($formKey) ?>"/>
+        <input type="hidden" name="period" value="<?= $escaper->escapeHtmlAttr($block->getCurrentPeriod()) ?>"/>
+        <button type="submit" class="action-default action-primary">
+            <?= $escaper->escapeHtml(__('Generate statements for %1', $block->getCurrentPeriod())) ?>
+        </button>
+    </form>
+</div>
+<div class="admin__data-grid-wrap">
+    <table class="data-grid">
+        <thead>
+        <tr>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('Seller')) ?></th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('Period')) ?></th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('Revenue')) ?></th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('Rate')) ?></th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('Commission')) ?></th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('Net')) ?></th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('Status')) ?></th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('PDF')) ?></th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php if (!$statements): ?>
+            <tr><td colspan="8" class="empty-text"><?= $escaper->escapeHtml(__('No statement generated yet.')) ?></td></tr>
+        <?php else: ?>
+            <?php foreach ($statements as $st): ?>
+                <tr>
+                    <td><?= $escaper->escapeHtml((string)($st['shop_title'] ?? ('#' . (int)$st['seller_id']))) ?></td>
+                    <td><?= $escaper->escapeHtml((string)$st['period']) ?></td>
+                    <td><?= $escaper->escapeHtml($block->money((float)$st['gross'])) ?></td>
+                    <td><?= $escaper->escapeHtml($block->ratePercent((float)$st['commission_rate'])) ?></td>
+                    <td><?= $escaper->escapeHtml($block->money((float)$st['commission'])) ?></td>
+                    <td><?= $escaper->escapeHtml($block->money((float)$st['net'])) ?></td>
+                    <td><span class="<?= $escaper->escapeHtmlAttr($block->statusClass($st['status'])) ?>"><?= $escaper->escapeHtml($block->statusLabel($st['status'])) ?></span></td>
+                    <td><a class="action-default" href="<?= $escaper->escapeUrl($block->getStatementPdfUrl((int)$st['id'])) ?>" target="_blank" rel="noopener"><?= $escaper->escapeHtml(__('Download')) ?></a></td>
+                </tr>
+            <?php endforeach; ?>
+        <?php endif; ?>
+        </tbody>
+    </table>
+</div>

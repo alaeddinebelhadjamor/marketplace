@@ -13,6 +13,9 @@
                     </resource>
                     <resource id="Mytek_Marketplace::reclamations" title="Seller claims" translate="title" sortOrder="30"/>
                     <resource id="Mytek_Marketplace::notifications" title="Send a notification" translate="title" sortOrder="25"/>
+                    <!-- Réservé à l'administrateur (ch. 2 § 2.1 : supervision des aspects financiers) ;
+                         non accordé à l'intégrateur. -->
+                    <resource id="Mytek_Marketplace::commissions" title="Commissions and payout statements" translate="title" sortOrder="50"/>
                 </resource>
                 <resource id="Magento_Backend::stores">
                     <resource id="Magento_Backend::stores_settings">

@@ -30,5 +30,10 @@
              title="Send a notification" translate="title" module="Mytek_Marketplace"
              sortOrder="45" parent="Mytek_Marketplace::marketplace"
              action="mytek_marketplace/notification/index" resource="Mytek_Marketplace::notifications"/>
+
+        <add id="Mytek_Marketplace::commissions"
+             title="Commissions" translate="title" module="Mytek_Marketplace"
+             sortOrder="50" parent="Mytek_Marketplace::marketplace"
+             action="mytek_marketplace/commission/index" resource="Mytek_Marketplace::commissions"/>
     </menu>
 </config>
