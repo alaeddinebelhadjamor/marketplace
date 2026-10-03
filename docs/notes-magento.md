@@ -288,3 +288,52 @@ renvoyant faux sans exception.
 Effet de bord assumé : les deux comptes de test utilisés pour la recette (vendeurs #10 et #11,
 des comptes « Boutique Test … » créés par d'anciens essais automatisés, pas des vendeurs réels)
 sont restés respectivement validé et refusé.
+
+## Incrément 6 — filtre par gouvernorat du vendeur (recherche et catégories)
+
+### Changements
+
+- **Écarts 1 et 3 de l'audit (filtre par gouvernorat absent du site client, absent du
+  rapport comme contribution du module — contradiction X3)** : corrigé. Nouvel attribut
+  produit `seller_governorate` (type select, 24 options = les gouvernorats de Tunisie,
+  `Model\Governorate\GovernorateList`, même liste que le formulaire vendeur de l'admin),
+  filtrable en catégorie **et** en recherche (`is_filterable` et `is_filterable_in_search`) :
+  un attribut texte libre n'est pas utilisable en navigation à facettes dans Magento, d'où le
+  choix d'un type `select`.
+- **Rempli pour les produits existants** (data patch `AddSellerGovernorateAttribute`) et
+  **tenu à jour** par une tâche planifiée toutes les 15 minutes
+  (`Cron\SyncSellerGovernorate`, `etc/crontab.xml`) et une commande disponible à la demande
+  (`bin/magento mytek:marketplace:sync-seller-governorate`), toutes deux appuyées sur le même
+  service `Model\Governorate\GovernorateSyncService` : lit les gouvernorats des vendeurs dans
+  la base marketplace, lit les produits portant un `seller_id` dans le catalogue Magento, et
+  corrèle les deux **en PHP** — aucune jointure SQL entre les deux bases. La mise à jour des
+  produits passe par `Magento\Catalog\Model\ResourceModel\Product\Action::updateAttributes`
+  (l'API Magento des actions de masse sur la grille produits), qui déclenche correctement les
+  invalidations d'index, plutôt que du SQL brut.
+- Logique de corrélation isolée dans une classe pure (`Model\Governorate\GovernorateDiff`,
+  sans dépendance Magento), pour rester testable unitairement.
+
+### Tests
+
+68 tests unitaires (8 nouveaux pour `GovernorateDiff`, couvrant les cas : produit sans valeur,
+valeur déjà correcte, vendeur qui change de gouvernorat, vendeur sans gouvernorat connu
+[valeur vidée], libellé inconnu, produit réattribué à un autre vendeur, regroupement de
+plusieurs produits sous une même valeur ; 1 nouveau pour la commande CLI). Le service lui-même
+(couplé aux collections Magento) est vérifié en recette.
+
+### Recette (données réelles du Magento local)
+
+| # | Étape | Résultat attendu | Obtenu |
+|---|---|---|---|
+| B1 | Déploiement (data patch) | Attribut créé (select, 24 options), produits existants remplis | 320 produits → Tunis, 89 → Ariana, 71 sans gouvernorat (vendeurs 1 et 6, sans gouvernorat renseigné) — concorde exactement avec les gouvernorats et volumes de produits par vendeur relevés dans l'audit | Conforme |
+| B2 | Rejouer la commande CLI | Idempotent : 0 produit mis à jour la deuxième fois | Conforme (480 vérifiés, 0 mis à jour) |
+| B3 | Réindexation (`catalogsearch_fulltext`, `catalog_product_attribute`) | Réussie, nouvel index OpenSearch versionné | Conforme (`magento2_product_1_v4`) |
+| B4 | Recherche native `?q=iphone` | Facette « Gouvernorat du vendeur » présente, options Tunis et Ariana visibles | Conforme |
+| B5 | Page de catégorie (`informatique.html`) | Même facette présente | Conforme |
+
+### Limite assumée
+
+La tâche planifiée tourne toutes les 15 minutes : un changement de gouvernorat chez un vendeur,
+ou un produit nouvellement rattaché à un vendeur, met jusqu'à 15 minutes à apparaître dans la
+facette (plus le délai du prochain cycle de réindexation catalogue, déjà présent nativement
+dans Magento). La commande CLI permet de forcer une synchronisation immédiate si besoin.

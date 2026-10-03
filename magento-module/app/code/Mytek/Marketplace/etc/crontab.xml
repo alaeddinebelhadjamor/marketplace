@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+    <group id="default">
+        <!-- Toutes les 15 minutes : tient seller_governorate à jour sans jointure entre les
+             deux bases (ch. 2 § 2.2.3, amélioration B). -->
+        <job name="mytek_marketplace_sync_seller_governorate" instance="Mytek\Marketplace\Cron\SyncSellerGovernorate" method="execute">
+            <schedule>*/15 * * * *</schedule>
+        </job>
+    </group>
+</config>

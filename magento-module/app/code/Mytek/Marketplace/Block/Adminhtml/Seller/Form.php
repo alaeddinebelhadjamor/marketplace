@@ -5,6 +5,7 @@ namespace Mytek\Marketplace\Block\Adminhtml\Seller;
 
 use Magento\Backend\Block\Template;
 use Magento\Backend\Block\Template\Context;
+use Mytek\Marketplace\Model\Governorate\GovernorateList;
 use Mytek\Marketplace\Model\SellerRepository;
 
 class Form extends Template
@@ -51,10 +52,6 @@ class Form extends Template
     /** Gouvernorats de Tunisie pour la liste déroulante */
     public function getGovernorates(): array
     {
-        return [
-            'Ariana', 'Béja', 'Ben Arous', 'Bizerte', 'Gabès', 'Gafsa', 'Jendouba', 'Kairouan',
-            'Kasserine', 'Kébili', 'Le Kef', 'Mahdia', 'La Manouba', 'Médenine', 'Monastir', 'Nabeul',
-            'Sfax', 'Sidi Bouzid', 'Siliana', 'Sousse', 'Tataouine', 'Tozeur', 'Tunis', 'Zaghouan',
-        ];
+        return GovernorateList::ALL;
     }
 }
