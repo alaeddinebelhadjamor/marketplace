@@ -15,6 +15,8 @@ fonctionnalités avancées.
 | File d'attente et planificateur | Laravel Queue (pilote base de données), Scheduler | — |
 | Base de données | MySQL 8, base existante `mk_database_prod_restored` | 3307 |
 | Services existants | Magento 8080, OpenSearch 9201, Prometheus 9090, Grafana 3001 | — |
+| Module Magento | `Mytek_Marketplace` (back-office admin/intégrateur), dans ce dépôt | — |
+| Emails locaux | Mailpit (SMTP / interface web), pour voir les emails du module sans serveur réel | 1025 / 8025 |
 
 Les ports 8000 et 5173 étant déjà utilisés sur le poste, la v2 utilise 8010 et 5180 : la v1
 (3000 / 4200) et la v2 peuvent tourner en même temps.
@@ -44,10 +46,13 @@ synchronisation des commandes Magento, suivi comportemental, métriques Promethe
 ## Organisation du dépôt
 
 ```
-backend/    API Laravel (app/, routes/, database/, tests/)
-frontend/   Application Vue (src/views, src/stores, src/services, tests/)
-docs/       Choix des versions, checklist de parité, propositions, notes de migration, supervision
-scripts/    Démarrage, arrêt, vérification, import de la configuration v1, miroir OneDrive
+backend/         API Laravel (app/, routes/, database/, tests/)
+frontend/        Application Vue (src/views, src/stores, src/services, tests/)
+magento-module/  Module Magento Mytek_Marketplace (back-office admin/intégrateur)
+docs/            Choix des versions, checklist de parité, propositions, notes de migration,
+                 audit et notes du module Magento, supervision
+scripts/         Démarrage, arrêt, vérification, import de la configuration v1, miroir OneDrive,
+                 déploiement et tests du module Magento
 ```
 
 ## Prérequis
@@ -125,11 +130,59 @@ au fichier `prometheus.yml` existant, puis importer
 [docs/supervision/grafana-marketplace-v2.json](docs/supervision/grafana-marketplace-v2.json)
 dans Grafana (Dashboards, Import).
 
+## Module Magento (Mytek_Marketplace)
+
+Le back-office de la marketplace (administrateur et intégrateur) est un module Magento,
+versionné dans ce dépôt (`magento-module/`) et déployé par copie dans le Magento local
+(`~/magento`, port 8080). Documentation complète : [docs/magento-audit.md](docs/magento-audit.md)
+(état du module face au rapport, écarts, décisions) et
+[docs/notes-magento.md](docs/notes-magento.md) (détail de chaque incrément réalisé, résultats
+des tests, recette).
+
+### Déploiement et tests
+
+```bash
+cd ~/projets/marketplace-v2
+scripts/magento-deploy.sh            # copie vers ~/magento, setup:upgrade, cache:flush
+scripts/magento-deploy.sh --compile  # + setup:di:compile (mode production)
+scripts/magento-tests.sh             # tests unitaires PHPUnit (framework de test de Magento)
+```
+
+`magento-deploy.sh` suppose PHPUnit 9.6 installé à part
+(`mkdir -p ~/tools && curl -sSLo ~/tools/phpunit-9.6.phar https://phar.phpunit.de/phpunit-9.6.phar`),
+Magento n'ayant pas ses dépendances de développement.
+
+### Configuration (Stores > Configuration > Mytek > Marketplace)
+
+| Champ | Rôle | Valeur par défaut |
+|---|---|---|
+| API base URL / Admin API key | Appels serveur à serveur vers l'API v2 (pièces jointes, notifications, commissions) ; la clé est chiffrée en base, jamais renvoyée au navigateur | `http://localhost:8010` / — |
+| Seller space URL | Lien « Espace Vendeur » de l'en-tête du site | `http://localhost:5180` |
+| OpenSearch base URL / Index prefix | Index de la marketplace lu par l'espace vendeur (distinct de l'index natif de Magento) | `http://localhost:9201` / `opensearch_index` |
+
+### Commandes et tâches planifiées
+
+| Commande | Rôle | Cadence planifiée |
+|---|---|---|
+| `bin/magento mytek:marketplace:sync-seller-governorate` | Tient à jour l'attribut produit filtrable `seller_governorate` (facette recherche/catégories) | toutes les 15 min |
+| `bin/magento mytek:marketplace:reindex-opensearch` | Reconstruit entièrement l'index marketplace (produits actifs portant un vendeur) | toutes les heures (filet de sécurité ; mise à jour « aussitôt » par ailleurs, à l'activation/désactivation d'un produit) |
+
+### Comptes et emails locaux
+
+- Rôles ACL **Intégrateur Marketplace** et **Administrateur Marketplace** créés par data patch
+  (`setup:upgrade`) ; créer ensuite les utilisateurs admin et leur affecter ces rôles
+  (`bin/magento admin:user:create`).
+- Emails au vendeur (validation, refus) envoyés via le `sendmail` système : en local, faire
+  pointer `/usr/sbin/sendmail` vers `msmtp` relayant vers un conteneur Mailpit
+  (`docker run -d --name mailpit -p 1025:1025 -p 8025:8025 axllent/mailpit:latest`), interface
+  de consultation sur http://localhost:8025.
+
 ## Tests
 
 ```bash
 cd backend && php8.4 vendor/bin/pest        # 128 tests : API, sécurité, jobs, exports
 cd frontend && npm test                      # 27 tests : composants, stores, règles
+cd .. && scripts/magento-tests.sh            # tests unitaires du module Magento
 ```
 
 Les tests du backend utilisent une base SQLite en mémoire, avec Magento et OpenSearch simulés :
@@ -173,3 +226,5 @@ Noms et rôles uniquement : les valeurs sont dans les fichiers `.env`, jamais ve
 - [docs/checklist-parite.md](docs/checklist-parite.md) : inventaire de la v1 et état de la parité
 - [docs/propositions-avancees.md](docs/propositions-avancees.md) : fonctionnalités proposées et retenues
 - [docs/notes-migration.md](docs/notes-migration.md) : changements, résultats des tests, limites connues
+- [docs/magento-audit.md](docs/magento-audit.md) : audit du module Magento face au rapport, écarts, décisions
+- [docs/notes-magento.md](docs/notes-magento.md) : incréments réalisés sur le module Magento, tests, recette
