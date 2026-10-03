@@ -33,7 +33,7 @@ class View extends Action implements HttpGetActionInterface
         }
 
         $resultPage = $this->resultPageFactory->create();
-        $resultPage->getConfig()->getTitle()->set($seller['shop_title'] . ' - Boutique Mytek Marketplace');
+        $resultPage->getConfig()->getTitle()->set(__('%1 - Mytek Marketplace shop', $seller['shop_title']));
         return $resultPage;
     }
 }

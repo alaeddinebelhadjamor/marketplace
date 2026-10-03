@@ -5,13 +5,20 @@
         <resources>
             <resource id="Magento_Backend::admin">
                 <resource id="Mytek_Marketplace::marketplace" title="Marketplace" translate="title" sortOrder="35">
-                    <resource id="Mytek_Marketplace::dashboard" title="Tableau de bord Marketplace" translate="title" sortOrder="10"/>
-                    <resource id="Mytek_Marketplace::sellers" title="Vendeurs" translate="title" sortOrder="20">
-                        <resource id="Mytek_Marketplace::sellers_edit" title="Modifier un vendeur" translate="title" sortOrder="10"/>
-                        <resource id="Mytek_Marketplace::sellers_validate" title="Valider / Refuser un vendeur" translate="title" sortOrder="20"/>
-                        <resource id="Mytek_Marketplace::sellers_delete" title="Supprimer un vendeur" translate="title" sortOrder="30"/>
+                    <resource id="Mytek_Marketplace::dashboard" title="Marketplace dashboard" translate="title" sortOrder="10"/>
+                    <resource id="Mytek_Marketplace::sellers" title="Sellers" translate="title" sortOrder="20">
+                        <resource id="Mytek_Marketplace::sellers_edit" title="Edit a seller" translate="title" sortOrder="10"/>
+                        <resource id="Mytek_Marketplace::sellers_validate" title="Approve or refuse a seller" translate="title" sortOrder="20"/>
+                        <resource id="Mytek_Marketplace::sellers_delete" title="Delete a seller" translate="title" sortOrder="30"/>
                     </resource>
-                    <resource id="Mytek_Marketplace::reclamations" title="Réclamations vendeurs" translate="title" sortOrder="30"/>
+                    <resource id="Mytek_Marketplace::reclamations" title="Seller claims" translate="title" sortOrder="30"/>
+                </resource>
+                <resource id="Magento_Backend::stores">
+                    <resource id="Magento_Backend::stores_settings">
+                        <resource id="Magento_Config::config">
+                            <resource id="Mytek_Marketplace::config" title="Mytek Marketplace configuration" translate="title" sortOrder="90"/>
+                        </resource>
+                    </resource>
                 </resource>
             </resource>
         </resources>

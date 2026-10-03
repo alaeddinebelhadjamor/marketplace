@@ -1,29 +1,30 @@
 <?php
 /** @var \Mytek\Marketplace\Block\Adminhtml\Seller\Grid $block */
-$sellers     = $block->getSellers();
-$counts      = $block->getCounts();
-$pendingOnly = $block->isPendingOnly();
-$formKey     = $block->getFormKey();
+/** @var \Magento\Framework\Escaper $escaper */
+$sellers      = $block->getSellers();
+$counts       = $block->getCounts();
+$pendingOnly  = $block->isPendingOnly();
+$formKey      = $block->getFormKey();
 $statusFilter = $block->getStatusFilter();
 ?>
 <div class="mk-toolbar">
     <div>
-        <span class="mk-badge mk-badge--pending"><?= (int)$counts[0] ?> en attente</span>
-        <span class="mk-badge mk-badge--ok"><?= (int)$counts[1] ?> validé(s)</span>
-        <span class="mk-badge mk-badge--ko"><?= (int)$counts[2] ?> refusé(s)</span>
+        <span class="mk-badge mk-badge--pending"><?= $escaper->escapeHtml(__('%1 pending', (int)$counts[0])) ?></span>
+        <span class="mk-badge mk-badge--ok"><?= $escaper->escapeHtml(__('%1 approved', (int)$counts[1])) ?></span>
+        <span class="mk-badge mk-badge--ko"><?= $escaper->escapeHtml(__('%1 refused', (int)$counts[2])) ?></span>
     </div>
     <?php if (!$pendingOnly): ?>
-    <form method="get" action="<?= $block->escapeUrl($block->getActionUrl('index')) ?>">
+    <form method="get" action="<?= $escaper->escapeUrl($block->getActionUrl('index')) ?>">
         <input type="text" name="q" class="admin__control-text"
-               placeholder="Rechercher un vendeur (nom, email, magasin)…"
-               value="<?= $block->escapeHtmlAttr($block->getSearch()) ?>"/>
+               placeholder="<?= $escaper->escapeHtmlAttr(__('Search a seller (name, email, shop)…')) ?>"
+               value="<?= $escaper->escapeHtmlAttr($block->getSearch()) ?>"/>
         <select name="status" class="admin__control-select">
-            <option value="">Tous les statuts</option>
-            <option value="0" <?= $statusFilter === 0 ? 'selected' : '' ?>>En attente</option>
-            <option value="1" <?= $statusFilter === 1 ? 'selected' : '' ?>>Validé</option>
-            <option value="2" <?= $statusFilter === 2 ? 'selected' : '' ?>>Refusé</option>
+            <option value=""><?= $escaper->escapeHtml(__('All statuses')) ?></option>
+            <option value="0" <?= $statusFilter === 0 ? 'selected' : '' ?>><?= $escaper->escapeHtml($block->statusLabel(0)) ?></option>
+            <option value="1" <?= $statusFilter === 1 ? 'selected' : '' ?>><?= $escaper->escapeHtml($block->statusLabel(1)) ?></option>
+            <option value="2" <?= $statusFilter === 2 ? 'selected' : '' ?>><?= $escaper->escapeHtml($block->statusLabel(2)) ?></option>
         </select>
-        <button type="submit" class="action-default">Filtrer</button>
+        <button type="submit" class="action-default"><?= $escaper->escapeHtml(__('Filter')) ?></button>
     </form>
     <?php endif; ?>
 </div>
@@ -32,23 +33,23 @@ $statusFilter = $block->getStatusFilter();
     <table class="data-grid">
         <thead>
         <tr>
-            <th class="data-grid-th">ID</th>
-            <th class="data-grid-th">Prénom</th>
-            <th class="data-grid-th">Nom</th>
-            <th class="data-grid-th">Email</th>
-            <th class="data-grid-th">Magasin</th>
-            <th class="data-grid-th">Contact</th>
-            <th class="data-grid-th">Gouvernorat</th>
-            <th class="data-grid-th">Statut</th>
-            <th class="data-grid-th"><?= $pendingOnly ? 'Inscrit le' : 'Créé le' ?></th>
-            <th class="data-grid-th">Actions</th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('ID')) ?></th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('First name')) ?></th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('Last name')) ?></th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('Email')) ?></th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('Shop')) ?></th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('Phone')) ?></th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('Governorate')) ?></th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('Status')) ?></th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml($pendingOnly ? __('Registered on') : __('Created on')) ?></th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('Actions')) ?></th>
         </tr>
         </thead>
         <tbody>
         <?php if (!$sellers): ?>
             <tr>
                 <td colspan="10" class="empty-text">
-                    <?= $pendingOnly ? 'Aucun vendeur en attente de validation.' : 'Aucun vendeur trouvé.' ?>
+                    <?= $escaper->escapeHtml($pendingOnly ? __('No seller awaiting approval.') : __('No seller found.')) ?>
                 </td>
             </tr>
         <?php else: ?>
@@ -56,39 +57,39 @@ $statusFilter = $block->getStatusFilter();
                 <?php $id = (int)$s['seller_id']; $status = (int)$s['status']; ?>
                 <tr>
                     <td><?= $id ?></td>
-                    <td><?= $block->escapeHtml($s['firstname']) ?></td>
-                    <td><?= $block->escapeHtml($s['lastname']) ?></td>
-                    <td><?= $block->escapeHtml($s['email']) ?></td>
-                    <td><?= $block->escapeHtml($s['shop_title']) ?></td>
-                    <td><?= $block->escapeHtml($s['contact_number']) ?></td>
-                    <td><?= $block->escapeHtml((string)($s['governorate'] ?? '—')) ?></td>
-                    <td><span class="<?= $block->escapeHtmlAttr($block->statusClass($status)) ?>"><?= $block->escapeHtml($block->statusLabel($status)) ?></span></td>
-                    <td><?= $block->escapeHtml($block->formatDateTime($s['created_at'] ?? null)) ?></td>
+                    <td><?= $escaper->escapeHtml($s['firstname']) ?></td>
+                    <td><?= $escaper->escapeHtml($s['lastname']) ?></td>
+                    <td><?= $escaper->escapeHtml($s['email']) ?></td>
+                    <td><?= $escaper->escapeHtml($s['shop_title']) ?></td>
+                    <td><?= $escaper->escapeHtml($s['contact_number']) ?></td>
+                    <td><?= $escaper->escapeHtml((string)($s['governorate'] ?? '—')) ?></td>
+                    <td><span class="<?= $escaper->escapeHtmlAttr($block->statusClass($status)) ?>"><?= $escaper->escapeHtml($block->statusLabel($status)) ?></span></td>
+                    <td><?= $escaper->escapeHtml($block->formatDateTime($s['created_at'] ?? null)) ?></td>
                     <td>
                         <div class="mk-actions">
                             <?php if ($status !== 1 && $block->canValidate()): ?>
-                                <form method="post" action="<?= $block->escapeUrl($block->getActionUrl('validate')) ?>">
-                                    <input type="hidden" name="form_key" value="<?= $block->escapeHtmlAttr($formKey) ?>"/>
+                                <form method="post" action="<?= $escaper->escapeUrl($block->getActionUrl('validate')) ?>">
+                                    <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($formKey) ?>"/>
                                     <input type="hidden" name="id" value="<?= $id ?>"/>
-                                    <button type="submit" class="action-default action-primary">Valider</button>
+                                    <button type="submit" class="action-default action-primary"><?= $escaper->escapeHtml(__('Approve')) ?></button>
                                 </form>
                             <?php endif; ?>
                             <?php if ($status === 0 && $block->canValidate()): ?>
-                                <form method="post" action="<?= $block->escapeUrl($block->getActionUrl('refuse')) ?>">
-                                    <input type="hidden" name="form_key" value="<?= $block->escapeHtmlAttr($formKey) ?>"/>
+                                <form method="post" action="<?= $escaper->escapeUrl($block->getActionUrl('refuse')) ?>">
+                                    <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($formKey) ?>"/>
                                     <input type="hidden" name="id" value="<?= $id ?>"/>
-                                    <button type="submit" class="action-default">Refuser</button>
+                                    <button type="submit" class="action-default"><?= $escaper->escapeHtml(__('Refuse')) ?></button>
                                 </form>
                             <?php endif; ?>
                             <?php if ($block->canEdit()): ?>
-                                <a class="action-default" href="<?= $block->escapeUrl($block->getActionUrl('edit', ['id' => $id])) ?>">Modifier</a>
+                                <a class="action-default" href="<?= $escaper->escapeUrl($block->getActionUrl('edit', ['id' => $id])) ?>"><?= $escaper->escapeHtml(__('Edit')) ?></a>
                             <?php endif; ?>
                             <?php if (!$pendingOnly && $block->canDelete()): ?>
-                                <form method="post" action="<?= $block->escapeUrl($block->getActionUrl('delete')) ?>"
-                                      onsubmit="return confirm('Supprimer définitivement ce vendeur ?');">
-                                    <input type="hidden" name="form_key" value="<?= $block->escapeHtmlAttr($formKey) ?>"/>
+                                <form method="post" action="<?= $escaper->escapeUrl($block->getActionUrl('delete')) ?>"
+                                      onsubmit="return confirm('<?= $escaper->escapeJs(__('Permanently delete this seller?')) ?>');">
+                                    <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($formKey) ?>"/>
                                     <input type="hidden" name="id" value="<?= $id ?>"/>
-                                    <button type="submit" class="action-default action-secondary">Supprimer</button>
+                                    <button type="submit" class="action-default action-secondary"><?= $escaper->escapeHtml(__('Delete')) ?></button>
                                 </form>
                             <?php endif; ?>
                         </div>

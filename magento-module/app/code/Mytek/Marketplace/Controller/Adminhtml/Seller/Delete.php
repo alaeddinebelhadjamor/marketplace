@@ -24,16 +24,16 @@ class Delete extends Action implements HttpPostActionInterface
 
         $seller = $id ? $this->sellers->getById($id) : null;
         if (!$seller) {
-            $this->messageManager->addErrorMessage(__('Vendeur introuvable.'));
+            $this->messageManager->addErrorMessage(__('Seller not found.'));
             return $redirect;
         }
 
         try {
             $this->sellers->delete($id);
-            $this->messageManager->addSuccessMessage(__('Le vendeur « %1 » a été supprimé.', $seller['shop_title']));
+            $this->messageManager->addSuccessMessage(__('Seller "%1" has been deleted.', $seller['shop_title']));
         } catch (\Throwable $e) {
             $this->messageManager->addErrorMessage(
-                __('Suppression impossible (le vendeur a probablement des réclamations ou des commandes liées) : %1', $e->getMessage())
+                __('The seller could not be deleted (linked records may prevent it): %1', $e->getMessage())
             );
         }
         return $redirect;

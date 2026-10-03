@@ -1,5 +1,6 @@
 <?php
 /** @var \Mytek\Marketplace\Block\Adminhtml\Seller\Form $block */
+/** @var \Magento\Framework\Escaper $escaper */
 $s = $block->getSeller();
 $governorates = $block->getGovernorates();
 $currentGov = $block->value('governorate');
@@ -7,73 +8,75 @@ if ($currentGov !== '' && !in_array($currentGov, $governorates, true)) {
     $governorates[] = $currentGov;
 }
 $textFields = [
-    'firstname'      => ['Prénom', true, 'text'],
-    'lastname'       => ['Nom', true, 'text'],
-    'email'          => ['Email', true, 'email'],
-    'contact_number' => ['Téléphone', true, 'text'],
-    'shop_title'     => ['Nom du magasin (enseigne)', true, 'text'],
-    'company'        => ['Société', false, 'text'],
-    'address'        => ['Adresse', false, 'text'],
-    'zipcode'        => ['Code postal', false, 'text'],
-    'tax_id'         => ['Matricule fiscal (Tax ID)', false, 'text'],
+    'firstname'      => [__('First name'), true, 'text'],
+    'lastname'       => [__('Last name'), true, 'text'],
+    'email'          => [__('Email'), true, 'email'],
+    'contact_number' => [__('Phone'), true, 'text'],
+    'shop_title'     => [__('Shop name'), true, 'text'],
+    'company'        => [__('Company'), false, 'text'],
+    'address'        => [__('Address'), false, 'text'],
+    'zipcode'        => [__('Postcode'), false, 'text'],
+    'tax_id'         => [__('Tax ID'), false, 'text'],
 ];
 ?>
-<form method="post" action="<?= $block->escapeUrl($block->getSaveUrl()) ?>" class="mk-form">
-    <input type="hidden" name="form_key" value="<?= $block->escapeHtmlAttr($block->getFormKey()) ?>"/>
+<form method="post" action="<?= $escaper->escapeUrl($block->getSaveUrl()) ?>" class="mk-form">
+    <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($block->getFormKey()) ?>"/>
 
     <fieldset class="admin__fieldset">
-        <legend class="admin__legend"><span>Informations du vendeur</span></legend>
+        <legend class="admin__legend"><span><?= $escaper->escapeHtml(__('Seller information')) ?></span></legend>
         <p class="mk-readonly">
-            ID #<?= (int)($s['seller_id'] ?? 0) ?> —
-            Statut : <?= $block->escapeHtml($block->statusLabel()) ?> —
-            Inscrit le <?= $block->escapeHtml((string)($s['created_at'] ?? '')) ?>
-            (le statut se modifie depuis la liste des vendeurs, le mot de passe n'est jamais modifiable ici)
+            <?= $escaper->escapeHtml(__(
+                'ID #%1 — Status: %2 — Registered on %3 (the status is changed from the seller list; the password is never editable here)',
+                (int)($s['seller_id'] ?? 0),
+                $block->statusLabel(),
+                (string)($s['created_at'] ?? '')
+            )) ?>
         </p>
 
         <div class="mk-grid-2">
             <?php foreach ($textFields as $name => [$label, $required, $type]): ?>
                 <div class="admin__field <?= $required ? '_required' : '' ?>">
-                    <label class="admin__field-label" for="mk-<?= $name ?>"><span><?= $block->escapeHtml($label) ?></span></label>
+                    <label class="admin__field-label" for="mk-<?= $escaper->escapeHtmlAttr($name) ?>"><span><?= $escaper->escapeHtml($label) ?></span></label>
                     <div class="admin__field-control">
-                        <input type="<?= $type ?>" id="mk-<?= $name ?>" name="seller[<?= $name ?>]"
+                        <input type="<?= $escaper->escapeHtmlAttr($type) ?>" id="mk-<?= $escaper->escapeHtmlAttr($name) ?>" name="seller[<?= $escaper->escapeHtmlAttr($name) ?>]"
                                class="admin__control-text" <?= $required ? 'required' : '' ?>
-                               value="<?= $block->escapeHtmlAttr($block->value($name)) ?>"/>
+                               value="<?= $escaper->escapeHtmlAttr($block->value($name)) ?>"/>
                     </div>
                 </div>
             <?php endforeach; ?>
 
             <div class="admin__field">
-                <label class="admin__field-label" for="mk-governorate"><span>Gouvernorat</span></label>
+                <label class="admin__field-label" for="mk-governorate"><span><?= $escaper->escapeHtml(__('Governorate')) ?></span></label>
                 <div class="admin__field-control">
                     <select id="mk-governorate" name="seller[governorate]" class="admin__control-select">
-                        <option value="">— Non renseigné —</option>
+                        <option value=""><?= $escaper->escapeHtml(__('— Not specified —')) ?></option>
                         <?php foreach ($governorates as $g): ?>
-                            <option value="<?= $block->escapeHtmlAttr($g) ?>" <?= $g === $currentGov ? 'selected' : '' ?>><?= $block->escapeHtml($g) ?></option>
+                            <option value="<?= $escaper->escapeHtmlAttr($g) ?>" <?= $g === $currentGov ? 'selected' : '' ?>><?= $escaper->escapeHtml($g) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
             </div>
 
             <div class="admin__field">
-                <label class="admin__field-label" for="mk-has_patent"><span>Patente commerciale</span></label>
+                <label class="admin__field-label" for="mk-has_patent"><span><?= $escaper->escapeHtml(__('Business licence')) ?></span></label>
                 <div class="admin__field-control">
                     <input type="checkbox" id="mk-has_patent" name="seller[has_patent]" value="1"
                            class="admin__control-checkbox" <?= $block->value('has_patent') === '1' ? 'checked' : '' ?>/>
-                    <label for="mk-has_patent" class="admin__field-label"><span>Le vendeur possède une patente</span></label>
+                    <label for="mk-has_patent" class="admin__field-label"><span><?= $escaper->escapeHtml(__('The seller holds a business licence')) ?></span></label>
                 </div>
             </div>
         </div>
 
         <div class="admin__field">
-            <label class="admin__field-label" for="mk-description"><span>Description de la boutique</span></label>
+            <label class="admin__field-label" for="mk-description"><span><?= $escaper->escapeHtml(__('Shop description')) ?></span></label>
             <div class="admin__field-control">
-                <textarea id="mk-description" name="seller[description]" class="admin__control-textarea"><?= $block->escapeHtml($block->value('description')) ?></textarea>
+                <textarea id="mk-description" name="seller[description]" class="admin__control-textarea"><?= $escaper->escapeHtml($block->value('description')) ?></textarea>
             </div>
         </div>
     </fieldset>
 
     <div class="mk-actions">
-        <button type="submit" class="action-default action-primary">Enregistrer</button>
-        <a class="action-default" href="<?= $block->escapeUrl($block->getBackUrl()) ?>">Retour à la liste</a>
+        <button type="submit" class="action-default action-primary"><?= $escaper->escapeHtml(__('Save')) ?></button>
+        <a class="action-default" href="<?= $escaper->escapeUrl($block->getBackUrl()) ?>"><?= $escaper->escapeHtml(__('Back to the list')) ?></a>
     </div>
 </form>

@@ -23,20 +23,27 @@ class Reply extends Action implements HttpPostActionInterface
         $message = trim((string)$this->getRequest()->getParam('message'));
         $redirect = $this->resultRedirectFactory->create()->setPath('*/*/view', ['id' => $id]);
 
-        if (!$id || !$this->reclamations->getById($id)) {
-            $this->messageManager->addErrorMessage(__('Réclamation introuvable.'));
+        $reclamation = $id ? $this->reclamations->getById($id) : null;
+        if (!$reclamation) {
+            $this->messageManager->addErrorMessage(__('Claim not found.'));
             return $redirect->setPath('*/*/index');
         }
+        // Tableau 2.16 : une réclamation résolue n'accepte plus de réponse. Contrôle serveur,
+        // le formulaire étant seulement masqué dans la page.
+        if (ReclamationRepository::isResolved($reclamation)) {
+            $this->messageManager->addErrorMessage(__('This claim is resolved: no new reply can be added.'));
+            return $redirect;
+        }
         if ($message === '') {
-            $this->messageManager->addErrorMessage(__('Le message ne peut pas être vide.'));
+            $this->messageManager->addErrorMessage(__('The message cannot be empty.'));
             return $redirect;
         }
 
         try {
             $this->reclamations->reply($id, $message);
-            $this->messageManager->addSuccessMessage(__('Réponse envoyée au vendeur.'));
+            $this->messageManager->addSuccessMessage(__('Reply sent to the seller.'));
         } catch (\Throwable $e) {
-            $this->messageManager->addErrorMessage(__('Envoi impossible : %1', $e->getMessage()));
+            $this->messageManager->addErrorMessage(__('The reply could not be sent: %1', $e->getMessage()));
         }
         return $redirect;
     }

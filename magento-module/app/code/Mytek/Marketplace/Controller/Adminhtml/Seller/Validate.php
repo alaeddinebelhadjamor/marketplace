@@ -24,17 +24,17 @@ class Validate extends Action implements HttpPostActionInterface
 
         $seller = $id ? $this->sellers->getById($id) : null;
         if (!$seller) {
-            $this->messageManager->addErrorMessage(__('Vendeur introuvable.'));
+            $this->messageManager->addErrorMessage(__('Seller not found.'));
             return $redirect;
         }
 
         try {
             $this->sellers->setStatus($id, SellerRepository::STATUS_VALIDATED);
             $this->messageManager->addSuccessMessage(
-                __('Le vendeur « %1 » (%2) a été validé. Il peut maintenant se connecter à son espace.', $seller['shop_title'], $seller['email'])
+                __('Seller "%1" (%2) has been approved and can now sign in.', $seller['shop_title'], $seller['email'])
             );
         } catch (\Throwable $e) {
-            $this->messageManager->addErrorMessage(__('Erreur lors de la validation : %1', $e->getMessage()));
+            $this->messageManager->addErrorMessage(__('The seller could not be approved: %1', $e->getMessage()));
         }
         return $redirect;
     }

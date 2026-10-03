@@ -31,7 +31,8 @@ class ReclamationRepository
     }
 
     /**
-     * @param bool $onlyUnseen  uniquement celles contenant un message non lu par l'admin
+     * @param bool $onlyUnseen uniquement les réclamations ouvertes contenant un message non lu par l'admin,
+     *                         c'est-à-dire exactement celles que compte countUnseen()
      */
     public function getList(bool $onlyUnseen = false): array
     {
@@ -39,10 +40,11 @@ class ReclamationRepository
         $select = $conn->select()
             ->from(['r' => self::RECLAMATIONS])
             ->joinLeft(['s' => self::SELLERS], 's.seller_id = r.vendeur_id', ['shop_title', 'firstname', 'lastname', 'email'])
-            ->where('r.type IN (?)', [self::TYPE_OPEN, self::TYPE_RESOLVED])
             ->order('r.updated_at DESC');
         if ($onlyUnseen) {
-            $select->where('r.admin_viewed = 0');
+            $select->where('r.type = ?', self::TYPE_OPEN)->where('r.admin_viewed = ?', 0);
+        } else {
+            $select->where('r.type IN (?)', [self::TYPE_OPEN, self::TYPE_RESOLVED]);
         }
         return $conn->fetchAll($select);
     }
@@ -83,6 +85,33 @@ class ReclamationRepository
             $m['attachments'] = $byMessage[$m['id']] ?? [];
         }
         return $messages;
+    }
+
+    /**
+     * Nom du fichier stocké. Les chemins enregistrés par la v1 sous Windows utilisent « \ ».
+     */
+    public static function fileName(string $storedPath): string
+    {
+        return basename(str_replace('\\', '/', $storedPath));
+    }
+
+    /** Vrai si le fichier est joint à un message de cette réclamation. */
+    public function hasAttachment(int $reclamationId, string $fileName): bool
+    {
+        $conn = $this->conn();
+        $paths = $conn->fetchCol(
+            $conn->select()
+                ->from(['a' => self::ATTACHMENTS], ['file_path'])
+                ->join(['m' => self::MESSAGES], 'm.id = a.message_id', [])
+                ->where('m.reclamation_id = ?', $reclamationId)
+                ->where('a.file_path LIKE ?', '%' . $fileName)
+        );
+        foreach ($paths as $path) {
+            if (self::fileName((string)$path) === $fileName) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function reply(int $reclamationId, string $message): void
@@ -126,16 +155,21 @@ class ReclamationRepository
         $conn = $this->conn();
         return (int)$conn->fetchOne(
             $conn->select()->from(self::RECLAMATIONS, new Expression('COUNT(*)'))
-                ->where('admin_viewed = 0')->where('type = ?', self::TYPE_OPEN)
+                ->where('admin_viewed = ?', 0)->where('type = ?', self::TYPE_OPEN)
         );
+    }
+
+    public static function isResolved(array $reclamation): bool
+    {
+        return (int)($reclamation['type'] ?? self::TYPE_OPEN) === self::TYPE_RESOLVED;
     }
 
     public static function typeLabel(int $type): string
     {
-        return match ($type) {
-            self::TYPE_RESOLVED => 'Résolue',
-            self::TYPE_OPEN     => 'Ouverte',
-            default             => 'Notification',
+        return (string)match ($type) {
+            self::TYPE_RESOLVED => __('Resolved'),
+            self::TYPE_OPEN     => __('Open'),
+            default             => __('Notification'),
         };
     }
 }

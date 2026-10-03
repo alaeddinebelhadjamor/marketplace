@@ -24,17 +24,17 @@ class Refuse extends Action implements HttpPostActionInterface
 
         $seller = $id ? $this->sellers->getById($id) : null;
         if (!$seller) {
-            $this->messageManager->addErrorMessage(__('Vendeur introuvable.'));
+            $this->messageManager->addErrorMessage(__('Seller not found.'));
             return $redirect;
         }
 
         try {
             $this->sellers->setStatus($id, SellerRepository::STATUS_REFUSED);
             $this->messageManager->addSuccessMessage(
-                __('L\'inscription du vendeur « %1 » (%2) a été refusée.', $seller['shop_title'], $seller['email'])
+                __('The registration of seller "%1" (%2) has been refused.', $seller['shop_title'], $seller['email'])
             );
         } catch (\Throwable $e) {
-            $this->messageManager->addErrorMessage(__('Erreur lors du refus : %1', $e->getMessage()));
+            $this->messageManager->addErrorMessage(__('The seller could not be refused: %1', $e->getMessage()));
         }
         return $redirect;
     }

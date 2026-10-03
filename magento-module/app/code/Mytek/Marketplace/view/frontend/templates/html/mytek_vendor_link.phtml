@@ -1,7 +1,12 @@
 <?php
-/** Lien "Espace Vendeur" dans l'en-tete, vers l'application Angular Mytek Partenaire. */
-$vendorSpaceUrl = 'http://localhost:4200';
+/** Lien « Espace Vendeur » de l'en-tête, vers l'espace vendeur (adresse configurable). */
+/** @var \Mytek\Marketplace\Block\VendorSpaceLink $block */
+/** @var \Magento\Framework\Escaper $escaper */
+$url = $block->getVendorSpaceUrl();
+if ($url === '') {
+    return;
+}
 ?>
-<a href="<?= $block->escapeUrl($vendorSpaceUrl) ?>" class="mk-espace-vendeur-link" target="_blank" rel="noopener">
-    <?= $block->escapeHtml(__('Espace Vendeur')) ?>
+<a href="<?= $escaper->escapeUrl($url) ?>" class="mk-espace-vendeur-link" target="_blank" rel="noopener">
+    <?= $escaper->escapeHtml(__('Seller space')) ?>
 </a>

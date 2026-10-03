@@ -26,7 +26,7 @@ class View extends Action implements HttpGetActionInterface
         $id = (int)$this->getRequest()->getParam('id');
         $reclamation = $id ? $this->reclamations->getById($id) : null;
         if (!$reclamation) {
-            $this->messageManager->addErrorMessage(__('Réclamation introuvable.'));
+            $this->messageManager->addErrorMessage(__('Claim not found.'));
             return $this->resultRedirectFactory->create()->setPath('*/*/index');
         }
 
@@ -35,7 +35,7 @@ class View extends Action implements HttpGetActionInterface
 
         $page = $this->pageFactory->create();
         $page->setActiveMenu('Mytek_Marketplace::reclamations');
-        $page->getConfig()->getTitle()->prepend(__('Réclamation #%1 — %2', $id, $reclamation['shop_title'] ?? ''));
+        $page->getConfig()->getTitle()->prepend(__('Claim #%1 — %2', $id, $reclamation['shop_title'] ?? ''));
         return $page;
     }
 }

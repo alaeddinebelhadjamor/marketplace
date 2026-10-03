@@ -38,10 +38,19 @@ class SellerRepository
             $select->where('status = ?', $status);
         }
         if ($search !== null && trim($search) !== '') {
-            $q = $conn->quote('%' . trim($search) . '%');
-            $select->where("(firstname LIKE $q OR lastname LIKE $q OR email LIKE $q OR shop_title LIKE $q)");
+            // Valeur liée (quoteInto remplace chaque « ? »), jokers LIKE de la saisie neutralisés
+            $select->where(
+                '(firstname LIKE ? OR lastname LIKE ? OR email LIKE ? OR shop_title LIKE ?)',
+                '%' . self::escapeLike(trim($search)) . '%'
+            );
         }
         return $conn->fetchAll($select);
+    }
+
+    /** Neutralise les jokers « % » et « _ » d'une saisie utilisée dans un LIKE. */
+    public static function escapeLike(string $value): string
+    {
+        return addcslashes($value, '\\%_');
     }
 
     public function getById(int $id): ?array
@@ -90,10 +99,10 @@ class SellerRepository
 
     public static function statusLabel(int $status): string
     {
-        return match ($status) {
-            self::STATUS_VALIDATED => 'Validé',
-            self::STATUS_REFUSED   => 'Refusé',
-            default                => 'En attente',
+        return (string)match ($status) {
+            self::STATUS_VALIDATED => __('Approved'),
+            self::STATUS_REFUSED   => __('Refused'),
+            default                => __('Pending'),
         };
     }
 }

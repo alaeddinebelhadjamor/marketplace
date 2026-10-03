@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="mytek" translate="label" sortOrder="400">
+            <label>Mytek</label>
+        </tab>
+        <section id="mytek_marketplace" translate="label" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+            <label>Marketplace</label>
+            <tab>mytek</tab>
+            <resource>Mytek_Marketplace::config</resource>
+
+            <group id="api" translate="label comment" sortOrder="10" showInDefault="1">
+                <label>Marketplace API (v2)</label>
+                <comment>Laravel API that stores attachments, notifications and payout statements.</comment>
+                <field id="base_url" translate="label comment" type="text" sortOrder="10" showInDefault="1">
+                    <label>API base URL</label>
+                    <comment>Example: http://localhost:8010 (no trailing slash).</comment>
+                    <validate>required-entry validate-url</validate>
+                </field>
+                <field id="admin_key" translate="label comment" type="obscure" sortOrder="20" showInDefault="1">
+                    <label>Admin API key</label>
+                    <comment>Value of ADMIN_API_KEY in the API .env file. Stored encrypted, sent only from the server in the x-admin-key header.</comment>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                </field>
+                <field id="timeout" translate="label" type="text" sortOrder="30" showInDefault="1">
+                    <label>Timeout (seconds)</label>
+                    <validate>required-entry validate-digits validate-greater-than-zero</validate>
+                </field>
+            </group>
+
+            <group id="links" translate="label" sortOrder="20" showInDefault="1">
+                <label>Links</label>
+                <field id="vendor_space_url" translate="label comment" type="text" sortOrder="10" showInDefault="1">
+                    <label>Seller space URL</label>
+                    <comment>Target of the "Seller space" link in the storefront header.</comment>
+                    <validate>required-entry validate-url</validate>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

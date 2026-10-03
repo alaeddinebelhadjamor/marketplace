@@ -9,12 +9,6 @@ use Mytek\Marketplace\Model\ReclamationRepository;
 
 class View extends Template
 {
-    /**
-     * Les pièces jointes sont stockées et servies par le backend Node.js
-     * (route publique GET /api/attachments/view/:filename).
-     */
-    private const NODE_ATTACHMENTS_URL = 'http://localhost:3000/api/attachments/view/';
-
     private ?array $reclamation = null;
 
     public function __construct(
@@ -45,7 +39,7 @@ class View extends Template
 
     public function isResolved(): bool
     {
-        return (int)($this->getReclamation()['type'] ?? 0) === ReclamationRepository::TYPE_RESOLVED;
+        return ReclamationRepository::isResolved($this->getReclamation());
     }
 
     public function typeLabel(): string
@@ -58,9 +52,22 @@ class View extends Template
         return (int)$message['sender'] === ReclamationRepository::SENDER_ADMIN;
     }
 
-    public function getAttachmentUrl(array $attachment): string
+    public function getAttachmentName(array $attachment): string
     {
-        return self::NODE_ATTACHMENTS_URL . rawurlencode(basename((string)$attachment['file_path']));
+        return ReclamationRepository::fileName((string)$attachment['file_path']);
+    }
+
+    /**
+     * Les pièces jointes sont servies par l'API v2, qui exige la clé admin : le lien pointe
+     * vers un contrôleur admin qui relaie le fichier (Controller\Adminhtml\Reclamation\Attachment).
+     */
+    public function getAttachmentUrl(array $attachment, bool $download = false): string
+    {
+        $params = ['id' => $this->getReclamationId(), 'file' => $this->getAttachmentName($attachment)];
+        if ($download) {
+            $params['download'] = 1;
+        }
+        return $this->getUrl('mytek_marketplace/reclamation/attachment', $params);
     }
 
     public function getReplyUrl(): string

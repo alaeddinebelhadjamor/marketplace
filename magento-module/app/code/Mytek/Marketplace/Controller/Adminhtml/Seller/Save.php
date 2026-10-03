@@ -26,7 +26,7 @@ class Save extends Action implements HttpPostActionInterface
         $redirect = $this->resultRedirectFactory->create();
 
         if (!$id || !$this->sellers->getById($id)) {
-            $this->messageManager->addErrorMessage(__('Vendeur introuvable.'));
+            $this->messageManager->addErrorMessage(__('Seller not found.'));
             return $redirect->setPath('*/*/index');
         }
 
@@ -35,22 +35,22 @@ class Save extends Action implements HttpPostActionInterface
 
         foreach (self::REQUIRED as $field) {
             if (empty($data[$field])) {
-                $this->messageManager->addErrorMessage(__('Le champ « %1 » est obligatoire.', $field));
+                $this->messageManager->addErrorMessage(__('The field "%1" is required.', $field));
                 return $redirect->setPath('*/*/edit', ['id' => $id]);
             }
         }
         if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            $this->messageManager->addErrorMessage(__('Adresse email invalide.'));
+            $this->messageManager->addErrorMessage(__('Invalid email address.'));
             return $redirect->setPath('*/*/edit', ['id' => $id]);
         }
 
         try {
             $this->sellers->update($id, $data);
-            $this->messageManager->addSuccessMessage(__('Les informations du vendeur ont été enregistrées.'));
+            $this->messageManager->addSuccessMessage(__('The seller information has been saved.'));
             return $redirect->setPath('*/*/index');
         } catch (\Throwable $e) {
             // Doublon d'email (contrainte UNIQUE) ou autre erreur SQL
-            $this->messageManager->addErrorMessage(__('Enregistrement impossible : %1', $e->getMessage()));
+            $this->messageManager->addErrorMessage(__('The seller could not be saved: %1', $e->getMessage()));
             return $redirect->setPath('*/*/edit', ['id' => $id]);
         }
     }

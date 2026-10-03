@@ -26,14 +26,14 @@ class Edit extends Action implements HttpGetActionInterface
         $id = (int)$this->getRequest()->getParam('id');
         $seller = $id ? $this->sellers->getById($id) : null;
         if (!$seller) {
-            $this->messageManager->addErrorMessage(__('Vendeur introuvable.'));
+            $this->messageManager->addErrorMessage(__('Seller not found.'));
             return $this->resultRedirectFactory->create()->setPath('*/*/index');
         }
 
         $page = $this->pageFactory->create();
         $page->setActiveMenu('Mytek_Marketplace::sellers');
         $page->getConfig()->getTitle()->prepend(
-            __('Modifier le vendeur : %1 %2', $seller['firstname'], $seller['lastname'])
+            __('Edit seller: %1 %2', $seller['firstname'], $seller['lastname'])
         );
         return $page;
     }

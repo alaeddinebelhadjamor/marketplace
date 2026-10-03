@@ -16,10 +16,10 @@ use Mytek\Marketplace\Model\SellerRepository;
 class View extends Template
 {
     public const SORT_OPTIONS = [
-        'relevance'  => 'Pertinence',
-        'price_asc'  => 'Prix croissant',
-        'price_desc' => 'Prix décroissant',
-        'name'       => 'Nom (A-Z)',
+        'relevance'  => 'Relevance',
+        'price_asc'  => 'Price: low to high',
+        'price_desc' => 'Price: high to low',
+        'name'       => 'Name (A-Z)',
     ];
 
     /** @var array|null|false */

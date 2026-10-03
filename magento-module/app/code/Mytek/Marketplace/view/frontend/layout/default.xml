@@ -12,7 +12,7 @@
         <referenceBlock name="report.bugs" remove="true"/>
         <referenceBlock name="form.subscribe" remove="true"/>
         <referenceContainer name="header.panel">
-            <block class="Magento\Framework\View\Element\Template" name="mytek_vendor_link"
+            <block class="Mytek\Marketplace\Block\VendorSpaceLink" name="mytek_vendor_link"
                    template="Mytek_Marketplace::html/mytek_vendor_link.phtml" after="top.links"/>
         </referenceContainer>
         <referenceContainer name="footer">

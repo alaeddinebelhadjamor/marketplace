@@ -21,7 +21,7 @@ class Index extends Action implements HttpGetActionInterface
     {
         $page = $this->pageFactory->create();
         $page->setActiveMenu('Mytek_Marketplace::sellers');
-        $page->getConfig()->getTitle()->prepend(__('Gestion des vendeurs'));
+        $page->getConfig()->getTitle()->prepend(__('Seller management'));
         return $page;
     }
 }

@@ -29,7 +29,10 @@ class Export extends Action implements HttpGetActionInterface
         $out = fopen('php://temp', 'r+');
         // BOM UTF-8 pour un affichage correct des accents dans Excel
         fwrite($out, "\xEF\xBB\xBF");
-        fputcsv($out, ['Commande', 'SKU', 'Produit', 'Quantité', 'Prix unitaire', 'Total ligne', 'Vendeur', 'Email vendeur', 'Date'], ';');
+        fputcsv($out, array_map('strval', [
+            __('Order'), __('SKU'), __('Product'), __('Quantity'), __('Unit price'),
+            __('Line total'), __('Seller'), __('Seller email'), __('Date'),
+        ]), ';');
         foreach ($rows as $r) {
             fputcsv($out, [
                 $r['order_id'],

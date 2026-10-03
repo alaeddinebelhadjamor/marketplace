@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <mytek_marketplace>
+            <api>
+                <base_url>http://localhost:8010</base_url>
+                <timeout>10</timeout>
+            </api>
+            <links>
+                <vendor_space_url>http://localhost:5180</vendor_space_url>
+            </links>
+        </mytek_marketplace>
+    </default>
+</config>

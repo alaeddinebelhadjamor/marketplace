@@ -7,22 +7,22 @@
              sortOrder="35" resource="Mytek_Marketplace::marketplace"/>
 
         <add id="Mytek_Marketplace::dashboard"
-             title="Tableau de bord" translate="title" module="Mytek_Marketplace"
+             title="Dashboard" translate="title" module="Mytek_Marketplace"
              sortOrder="10" parent="Mytek_Marketplace::marketplace"
              action="mytek_marketplace/dashboard/index" resource="Mytek_Marketplace::dashboard"/>
 
         <add id="Mytek_Marketplace::sellers"
-             title="Vendeurs" translate="title" module="Mytek_Marketplace"
+             title="Sellers" translate="title" module="Mytek_Marketplace"
              sortOrder="20" parent="Mytek_Marketplace::marketplace"
              action="mytek_marketplace/seller/index" resource="Mytek_Marketplace::sellers"/>
 
         <add id="Mytek_Marketplace::sellers_pending"
-             title="Validation vendeurs" translate="title" module="Mytek_Marketplace"
+             title="Seller approval" translate="title" module="Mytek_Marketplace"
              sortOrder="30" parent="Mytek_Marketplace::marketplace"
              action="mytek_marketplace/seller/pending" resource="Mytek_Marketplace::sellers_validate"/>
 
         <add id="Mytek_Marketplace::reclamations"
-             title="Réclamations vendeurs" translate="title" module="Mytek_Marketplace"
+             title="Seller claims" translate="title" module="Mytek_Marketplace"
              sortOrder="40" parent="Mytek_Marketplace::marketplace"
              action="mytek_marketplace/reclamation/index" resource="Mytek_Marketplace::reclamations"/>
     </menu>

@@ -23,15 +23,15 @@ class Resolve extends Action implements HttpPostActionInterface
         $redirect = $this->resultRedirectFactory->create()->setPath('*/*/view', ['id' => $id]);
 
         if (!$id || !$this->reclamations->getById($id)) {
-            $this->messageManager->addErrorMessage(__('Réclamation introuvable.'));
+            $this->messageManager->addErrorMessage(__('Claim not found.'));
             return $redirect->setPath('*/*/index');
         }
 
         try {
             $this->reclamations->resolve($id);
-            $this->messageManager->addSuccessMessage(__('La réclamation #%1 a été marquée comme résolue.', $id));
+            $this->messageManager->addSuccessMessage(__('Claim #%1 has been marked as resolved.', $id));
         } catch (\Throwable $e) {
-            $this->messageManager->addErrorMessage(__('Opération impossible : %1', $e->getMessage()));
+            $this->messageManager->addErrorMessage(__('The operation failed: %1', $e->getMessage()));
         }
         return $redirect;
     }

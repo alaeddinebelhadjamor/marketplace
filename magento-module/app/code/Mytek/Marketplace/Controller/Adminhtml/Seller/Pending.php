@@ -21,7 +21,7 @@ class Pending extends Action implements HttpGetActionInterface
     {
         $page = $this->pageFactory->create();
         $page->setActiveMenu('Mytek_Marketplace::sellers_pending');
-        $page->getConfig()->getTitle()->prepend(__('Validation des vendeurs'));
+        $page->getConfig()->getTitle()->prepend(__('Seller approval'));
         return $page;
     }
 }

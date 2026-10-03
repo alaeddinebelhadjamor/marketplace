@@ -1,50 +1,53 @@
 <?php
 /** @var \Mytek\Marketplace\Block\Adminhtml\Reclamation\View $block */
+/** @var \Magento\Framework\Escaper $escaper */
 $r        = $block->getReclamation();
 $messages = $block->getMessages();
 $formKey  = $block->getFormKey();
 $resolved = $block->isResolved();
 $sellerName = trim(($r['firstname'] ?? '') . ' ' . ($r['lastname'] ?? ''));
+$shopTitle  = (string)($r['shop_title'] ?? __('Seller'));
 ?>
 <div class="mk-toolbar">
     <div>
-        <a class="action-default" href="<?= $block->escapeUrl($block->getBackUrl()) ?>">Retour</a>
+        <a class="action-default" href="<?= $escaper->escapeUrl($block->getBackUrl()) ?>"><?= $escaper->escapeHtml(__('Back')) ?></a>
         &nbsp;
-        <strong>Réclamation #<?= $block->getReclamationId() ?></strong> —
-        <?= $block->escapeHtml((string)($r['shop_title'] ?? 'Vendeur')) ?>
-        <?php if ($sellerName !== ''): ?>(<?= $block->escapeHtml($sellerName) ?>, <?= $block->escapeHtml((string)($r['email'] ?? '')) ?>)<?php endif; ?>
+        <strong><?= $escaper->escapeHtml(__('Claim #%1', $block->getReclamationId())) ?></strong> —
+        <?= $escaper->escapeHtml($shopTitle) ?>
+        <?php if ($sellerName !== ''): ?>(<?= $escaper->escapeHtml($sellerName) ?>, <?= $escaper->escapeHtml((string)($r['email'] ?? '')) ?>)<?php endif; ?>
         &nbsp;
-        <span class="<?= $resolved ? 'mk-badge mk-badge--ok' : 'mk-badge mk-badge--pending' ?>"><?= $block->escapeHtml($block->typeLabel()) ?></span>
+        <span class="<?= $resolved ? 'mk-badge mk-badge--ok' : 'mk-badge mk-badge--pending' ?>"><?= $escaper->escapeHtml($block->typeLabel()) ?></span>
     </div>
     <?php if (!$resolved): ?>
-        <form method="post" action="<?= $block->escapeUrl($block->getResolveUrl()) ?>"
-              onsubmit="return confirm('Marquer cette réclamation comme résolue ? La conversation sera fermée.');">
-            <input type="hidden" name="form_key" value="<?= $block->escapeHtmlAttr($formKey) ?>"/>
-            <button type="submit" class="action-default action-primary">Marquer résolue</button>
+        <form method="post" action="<?= $escaper->escapeUrl($block->getResolveUrl()) ?>"
+              onsubmit="return confirm('<?= $escaper->escapeJs(__('Mark this claim as resolved? The conversation will be closed.')) ?>');">
+            <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($formKey) ?>"/>
+            <button type="submit" class="action-default action-primary"><?= $escaper->escapeHtml(__('Mark as resolved')) ?></button>
         </form>
     <?php endif; ?>
 </div>
 
 <div class="mk-thread">
     <?php if (!$messages): ?>
-        <p class="empty-text">Aucun message dans cette réclamation.</p>
+        <p class="empty-text"><?= $escaper->escapeHtml(__('No message in this claim.')) ?></p>
     <?php endif; ?>
 
     <?php foreach ($messages as $m): ?>
         <?php $fromAdmin = $block->isFromAdmin($m); ?>
         <div class="mk-msg <?= $fromAdmin ? 'mk-msg--admin' : 'mk-msg--seller' ?>">
             <div class="mk-msg__meta">
-                <span><strong><?= $fromAdmin ? 'Support Mytek' : $block->escapeHtml((string)($r['shop_title'] ?? 'Vendeur')) ?></strong></span>
-                <span><?= $block->escapeHtml($block->formatDateTime($m['created_at'] ?? null)) ?></span>
+                <span><strong><?= $escaper->escapeHtml($fromAdmin ? __('Mytek support') : $shopTitle) ?></strong></span>
+                <span><?= $escaper->escapeHtml($block->formatDateTime($m['created_at'] ?? null)) ?></span>
             </div>
-            <div class="mk-msg__body"><?= $block->escapeHtml((string)($m['message'] ?? '')) ?></div>
+            <div class="mk-msg__body"><?= $escaper->escapeHtml((string)($m['message'] ?? '')) ?></div>
             <?php if (!empty($m['attachments'])): ?>
                 <div class="mk-msg__files">
-                    Pièces jointes :
+                    <?= $escaper->escapeHtml(__('Attachments:')) ?>
                     <?php foreach ($m['attachments'] as $a): ?>
-                        <a href="<?= $block->escapeUrl($block->getAttachmentUrl($a)) ?>" target="_blank" rel="noopener">
-                            <?= $block->escapeHtml(basename((string)$a['file_path'])) ?>
+                        <a href="<?= $escaper->escapeUrl($block->getAttachmentUrl($a)) ?>" target="_blank" rel="noopener">
+                            <?= $escaper->escapeHtml($block->getAttachmentName($a)) ?>
                         </a>
+                        (<a href="<?= $escaper->escapeUrl($block->getAttachmentUrl($a, true)) ?>"><?= $escaper->escapeHtml(__('download')) ?></a>)
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
@@ -52,18 +55,18 @@ $sellerName = trim(($r['firstname'] ?? '') . ' ' . ($r['lastname'] ?? ''));
     <?php endforeach; ?>
 
     <?php if (!$resolved): ?>
-        <form method="post" action="<?= $block->escapeUrl($block->getReplyUrl()) ?>" class="mk-form">
-            <input type="hidden" name="form_key" value="<?= $block->escapeHtmlAttr($formKey) ?>"/>
+        <form method="post" action="<?= $escaper->escapeUrl($block->getReplyUrl()) ?>" class="mk-form">
+            <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($formKey) ?>"/>
             <div class="admin__field _required">
-                <label class="admin__field-label" for="mk-reply"><span>Votre réponse</span></label>
+                <label class="admin__field-label" for="mk-reply"><span><?= $escaper->escapeHtml(__('Your reply')) ?></span></label>
                 <div class="admin__field-control">
                     <textarea id="mk-reply" name="message" class="admin__control-textarea" required
-                              placeholder="Écrivez votre réponse au vendeur…"></textarea>
+                              placeholder="<?= $escaper->escapeHtmlAttr(__('Write your reply to the seller…')) ?>"></textarea>
                 </div>
             </div>
-            <button type="submit" class="action-default action-primary">Envoyer la réponse</button>
+            <button type="submit" class="action-default action-primary"><?= $escaper->escapeHtml(__('Send the reply')) ?></button>
         </form>
     <?php else: ?>
-        <p class="mk-readonly">Cette réclamation est résolue — la conversation est fermée.</p>
+        <p class="mk-readonly"><?= $escaper->escapeHtml(__('This claim is resolved: the conversation is closed.')) ?></p>
     <?php endif; ?>
 </div>
