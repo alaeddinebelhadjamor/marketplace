@@ -28,7 +28,7 @@ start() {
   fi
   # Le processus écrit lui-même son identifiant : c'est le chef du groupe créé par
   # setsid, ce qui permet à arreter.sh d'arrêter aussi les processus enfants.
-  ( cd "$dir" && setsid nohup bash -c 'echo $$ > "$0"; exec "$@"' "$RUN/$name.pid" "$@" >>"$LOGS/$name.log" 2>&1 & )
+  ( cd "$dir" && setsid nohup bash -c 'echo $$ > "$0"; exec "$@"' "$RUN/$name.pid" "$@" </dev/null >>"$LOGS/$name.log" 2>&1 & )
   sleep 1
   if running "$name"; then echo "  $name : démarré (pid $(cat "$RUN/$name.pid"))"; else echo "  $name : ÉCHEC, voir $LOGS/$name.log"; fi
 }

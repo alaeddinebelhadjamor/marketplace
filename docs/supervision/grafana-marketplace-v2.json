@@ -1,0 +1,100 @@
+{
+  "title": "Marketplace Mytek v2 - Supervision",
+  "uid": "marketplace-v2",
+  "tags": ["marketplace", "laravel"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "templating": {
+    "list": [
+      { "name": "datasource", "type": "datasource", "query": "prometheus", "label": "Source Prometheus" }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1, "type": "stat", "title": "API disponible",
+      "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [{ "expr": "up{job=\"marketplace-v2\"}", "refId": "A" }],
+      "fieldConfig": { "defaults": { "mappings": [{ "type": "value", "options": { "0": { "text": "Arrêtée", "color": "red" }, "1": { "text": "En ligne", "color": "green" } } }] } }
+    },
+    {
+      "id": 2, "type": "stat", "title": "Requêtes / s",
+      "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [{ "expr": "sum(rate(http_requests_total{job=\"marketplace-v2\"}[5m]))", "refId": "A" }],
+      "fieldConfig": { "defaults": { "unit": "reqps", "decimals": 2 } }
+    },
+    {
+      "id": 3, "type": "stat", "title": "Erreurs serveur (5xx) %",
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [{ "expr": "100 * sum(rate(http_requests_total{job=\"marketplace-v2\",status=~\"5..\"}[5m])) / clamp_min(sum(rate(http_requests_total{job=\"marketplace-v2\"}[5m])), 1e-9)", "refId": "A" }],
+      "fieldConfig": { "defaults": { "unit": "percent", "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 1 }, { "color": "red", "value": 5 }] } } }
+    },
+    {
+      "id": 4, "type": "stat", "title": "Jobs en échec",
+      "gridPos": { "x": 12, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [{ "expr": "marketplace_failed_jobs{job=\"marketplace-v2\"}", "refId": "A" }],
+      "fieldConfig": { "defaults": { "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] } } }
+    },
+    {
+      "id": 5, "type": "stat", "title": "Dernière synchro des commandes",
+      "gridPos": { "x": 16, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [{ "expr": "time() - marketplace_last_orders_sync_timestamp_seconds{job=\"marketplace-v2\"}", "refId": "A" }],
+      "fieldConfig": { "defaults": { "unit": "s", "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 600 }, { "color": "red", "value": 3600 }] } } }
+    },
+    {
+      "id": 6, "type": "stat", "title": "Réclamations ouvertes",
+      "gridPos": { "x": 20, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [{ "expr": "marketplace_open_reclamations{job=\"marketplace-v2\"}", "refId": "A" }]
+    },
+    {
+      "id": 7, "type": "timeseries", "title": "Requêtes par route",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 9 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [{ "expr": "sum by (route) (rate(http_requests_total{job=\"marketplace-v2\"}[5m]))", "legendFormat": "{{route}}", "refId": "A" }],
+      "fieldConfig": { "defaults": { "unit": "reqps" } }
+    },
+    {
+      "id": 8, "type": "timeseries", "title": "Temps de réponse p95 par route",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 9 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [{ "expr": "histogram_quantile(0.95, sum by (le, route) (rate(http_request_duration_seconds_bucket{job=\"marketplace-v2\"}[5m])))", "legendFormat": "{{route}}", "refId": "A" }],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "id": 9, "type": "timeseries", "title": "Appels Magento / OpenSearch (p95)",
+      "gridPos": { "x": 0, "y": 13, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [{ "expr": "histogram_quantile(0.95, sum by (le, service) (rate(external_request_duration_seconds_bucket{job=\"marketplace-v2\"}[5m])))", "legendFormat": "{{service}}", "refId": "A" }],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "id": 10, "type": "timeseries", "title": "Lignes de commande synchronisées",
+      "gridPos": { "x": 12, "y": 13, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "increase(marketplace_orders_synced_total{job=\"marketplace-v2\"}[1h])", "legendFormat": "insérées / h", "refId": "A" },
+        { "expr": "sum by (result) (increase(marketplace_sync_runs_total{job=\"marketplace-v2\",task=\"orders\"}[1h]))", "legendFormat": "exécutions {{result}} / h", "refId": "B" }
+      ]
+    },
+    {
+      "id": 11, "type": "piechart", "title": "Vendeurs par statut",
+      "gridPos": { "x": 0, "y": 21, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [{ "expr": "marketplace_sellers{job=\"marketplace-v2\"}", "legendFormat": "statut {{status}}", "refId": "A", "instant": true }]
+    },
+    {
+      "id": 12, "type": "bargauge", "title": "Produits les plus vus (jour)",
+      "gridPos": { "x": 8, "y": 21, "w": 16, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [{ "expr": "topk(10, magento_product_views_total{job=\"marketplace-v2\"})", "legendFormat": "{{product_sku}} ({{date}})", "refId": "A", "instant": true }],
+      "options": { "orientation": "horizontal" }
+    }
+  ]
+}

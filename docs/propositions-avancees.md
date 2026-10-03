@@ -1,7 +1,10 @@
 # Fonctionnalités avancées proposées pour la v2
 
 Rédigé le 3 octobre 2026, après l'inventaire de parité (`checklist-parite.md`).
-Rien n'est codé tant que la liste finale n'est pas choisie.
+
+**Liste retenue : lot « Recommandé »**, soit les rangs 1 à 11 et les améliorations A, B (historique
+des notifications) et C. Tout est réalisé et testé (voir `notes-migration.md`). Les rangs 12 à 16
+ne sont pas réalisés.
 
 ## Hypothèses d'estimation
 
