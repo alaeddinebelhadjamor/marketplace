@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd"
+      layout="1column">
+    <body>
+        <referenceContainer name="content">
+            <block class="Mytek\Marketplace\Block\Seller\View"
+                   name="mytek.marketplace.seller.view"
+                   template="Mytek_Marketplace::seller/view.phtml"
+                   cacheable="false"/>
+        </referenceContainer>
+    </body>
+</page>

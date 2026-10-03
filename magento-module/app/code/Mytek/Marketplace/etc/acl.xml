@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+    <acl>
+        <resources>
+            <resource id="Magento_Backend::admin">
+                <resource id="Mytek_Marketplace::marketplace" title="Marketplace" translate="title" sortOrder="35">
+                    <resource id="Mytek_Marketplace::dashboard" title="Tableau de bord Marketplace" translate="title" sortOrder="10"/>
+                    <resource id="Mytek_Marketplace::sellers" title="Vendeurs" translate="title" sortOrder="20">
+                        <resource id="Mytek_Marketplace::sellers_edit" title="Modifier un vendeur" translate="title" sortOrder="10"/>
+                        <resource id="Mytek_Marketplace::sellers_validate" title="Valider / Refuser un vendeur" translate="title" sortOrder="20"/>
+                        <resource id="Mytek_Marketplace::sellers_delete" title="Supprimer un vendeur" translate="title" sortOrder="30"/>
+                    </resource>
+                    <resource id="Mytek_Marketplace::reclamations" title="Réclamations vendeurs" translate="title" sortOrder="30"/>
+                </resource>
+            </resource>
+        </resources>
+    </acl>
+</config>

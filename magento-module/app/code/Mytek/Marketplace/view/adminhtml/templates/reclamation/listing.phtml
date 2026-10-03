@@ -1,0 +1,52 @@
+<?php
+/** @var \Mytek\Marketplace\Block\Adminhtml\Reclamation\Listing $block */
+$list        = $block->getReclamations();
+$unseenOnly  = $block->isUnseenOnly();
+$unseenCount = $block->getUnseenCount();
+?>
+<div class="mk-toolbar">
+    <div class="mk-tabs">
+        <a href="<?= $block->escapeUrl($block->getFilterUrl(false)) ?>" class="<?= !$unseenOnly ? 'active' : '' ?>">Toutes</a>
+        <a href="<?= $block->escapeUrl($block->getFilterUrl(true)) ?>" class="<?= $unseenOnly ? 'active' : '' ?>">
+            Non vues
+            <?php if ($unseenCount > 0): ?><span class="mk-badge mk-badge--new"><?= $unseenCount ?></span><?php endif; ?>
+        </a>
+    </div>
+    <div class="mk-readonly"><?= count($list) ?> réclamation(s)</div>
+</div>
+
+<div class="admin__data-grid-wrap">
+    <table class="data-grid">
+        <thead>
+        <tr>
+            <th class="data-grid-th">#</th>
+            <th class="data-grid-th">Vendeur</th>
+            <th class="data-grid-th">Boutique</th>
+            <th class="data-grid-th">Statut</th>
+            <th class="data-grid-th">Nouveau message</th>
+            <th class="data-grid-th">Créée le</th>
+            <th class="data-grid-th">Dernière activité</th>
+            <th class="data-grid-th">Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php if (!$list): ?>
+            <tr><td colspan="8" class="empty-text">Aucune réclamation.</td></tr>
+        <?php else: ?>
+            <?php foreach ($list as $r): ?>
+                <?php $type = (int)$r['type']; $isNew = (int)$r['admin_viewed'] === 0 && $type === 1; ?>
+                <tr>
+                    <td>#<?= (int)$r['id'] ?></td>
+                    <td><?= $block->escapeHtml(trim(($r['firstname'] ?? '') . ' ' . ($r['lastname'] ?? '')) ?: '—') ?></td>
+                    <td><?= $block->escapeHtml((string)($r['shop_title'] ?? '—')) ?></td>
+                    <td><span class="<?= $block->escapeHtmlAttr($block->typeClass($type)) ?>"><?= $block->escapeHtml($block->typeLabel($type)) ?></span></td>
+                    <td><?php if ($isNew): ?><span class="mk-badge mk-badge--new">Nouveau</span><?php else: ?>—<?php endif; ?></td>
+                    <td><?= $block->escapeHtml($block->formatDateTime($r['created_at'] ?? null)) ?></td>
+                    <td><?= $block->escapeHtml($block->formatDateTime($r['updated_at'] ?? null)) ?></td>
+                    <td><a class="action-default" href="<?= $block->escapeUrl($block->getViewUrl((int)$r['id'])) ?>">Voir la conversation</a></td>
+                </tr>
+            <?php endforeach; ?>
+        <?php endif; ?>
+        </tbody>
+    </table>
+</div>

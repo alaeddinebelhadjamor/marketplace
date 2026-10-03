@@ -1,0 +1,203 @@
+/* Mytek Marketplace — front-office : page boutique vendeur + lien fiche produit */
+
+/* Lien "Espace Vendeur" dans le panel d'en-tête */
+.mk-espace-vendeur-link {
+    display: inline-block;
+    background: #c70a0a;
+    color: #fff !important;
+    padding: 3px 12px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+    margin-left: 12px;
+    vertical-align: middle;
+}
+.mk-espace-vendeur-link:hover {
+    background: #a00808;
+}
+
+/* Bouton d'action principal (Ajouter au panier, Passer à la caisse) : vert mytek.tn */
+.action.primary,
+.action.tocart,
+button.action.primary {
+    background: #26b14f !important;
+    border-color: #1f9a43 !important;
+}
+.action.primary:hover,
+.action.tocart:hover,
+button.action.primary:hover {
+    background: #1f9a43 !important;
+    border-color: #1a8339 !important;
+}
+
+.mk-shop {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 15px 40px;
+    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.mk-shop__banner {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: linear-gradient(135deg, #7a0000 0%, #c70a0a 60%, #7a0000 100%);
+    color: #fff;
+    border-radius: 8px;
+    padding: 24px 28px;
+    margin: 20px 0 30px;
+}
+.mk-shop__avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: #fff;
+    color: #c70a0a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: 700;
+    flex-shrink: 0;
+    border: 3px solid #fff;
+}
+.mk-shop__title { margin: 0; font-size: 24px; font-weight: 700; }
+.mk-shop__verified {
+    display: inline-block;
+    margin-top: 6px;
+    background: #fff;
+    color: #1f7a34;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+}
+.mk-shop__desc { margin: 8px 0 0; font-size: 13px; opacity: .9; max-width: 640px; }
+
+/* Mise en page 2 colonnes : sidebar filtre (gauche) + contenu (droite), comme les
+   pages catégorie de mytek.tn (cf. capture "HP Victus 15 | Pc Portable Gamer"). */
+.mk-shop__layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 28px;
+}
+
+.mk-shop__sidebar {
+    width: 220px;
+    flex-shrink: 0;
+}
+.mk-filter-form { display: flex; flex-direction: column; gap: 18px; }
+.mk-filter-btn {
+    display: block;
+    width: 100%;
+    background: #c70a0a;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 12px 0;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+}
+.mk-filter-btn:hover { background: #a80808; }
+.mk-filter-section { border-top: 1px solid #e5e5e5; padding-top: 14px; }
+.mk-filter-title { font-weight: 700; font-size: 14px; margin-bottom: 8px; text-transform: uppercase; }
+.mk-filter-hint { font-size: 12px; color: #777; margin-bottom: 10px; }
+.mk-filter-price-inputs { display: flex; align-items: center; gap: 6px; }
+.mk-filter-price-inputs input {
+    width: 100%;
+    min-width: 0;
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 13px;
+}
+.mk-filter-price-inputs span { color: #999; }
+
+.mk-shop__content { flex: 1; min-width: 0; }
+
+.mk-shop__toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: #666;
+}
+.mk-sort-form { display: flex; align-items: center; gap: 8px; }
+.mk-sort-form select {
+    padding: 5px 8px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 13px;
+}
+.mk-sort-btn {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 5px 12px;
+    font-size: 13px;
+    cursor: pointer;
+}
+.mk-sort-btn:hover { background: #f5f5f5; }
+
+.mk-shop__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+}
+.mk-shop__card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    padding: 14px;
+    background: #fff;
+    transition: box-shadow .15s ease;
+}
+.mk-shop__card:hover { box-shadow: 0 2px 10px rgba(0, 0, 0, .1); }
+.mk-shop__card-imgwrap {
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+.mk-shop__card-imgwrap img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.mk-shop__card-name {
+    font-size: 13px;
+    min-height: 34px;
+    margin-bottom: 8px;
+    color: #1979c3;
+    text-decoration: none;
+}
+.mk-shop__card-name:hover { text-decoration: underline; }
+.mk-shop__card-price { font-size: 15px; font-weight: 700; margin-top: auto; }
+.mk-shop__price--old {
+    text-decoration: line-through;
+    color: #999;
+    font-weight: 400;
+    margin-right: 8px;
+    font-size: 13px;
+}
+.mk-shop__price--now { color: #c70a0a; }
+.mk-shop__empty { color: #777; padding: 40px 0; text-align: center; }
+
+@media (max-width: 640px) {
+    .mk-shop__layout { flex-direction: column; }
+    .mk-shop__sidebar { width: 100%; }
+}
+
+.mk-seller-link {
+    margin: 6px 0 14px;
+    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    color: #555;
+}
+.mk-seller-link a { color: #c70a0a; font-weight: 700; text-decoration: none; }
+.mk-seller-link a:hover { text-decoration: underline; }
+.mk-seller-link__verified { color: #1f7a34; font-weight: 700; margin-left: 6px; }

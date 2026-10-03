@@ -1,0 +1,69 @@
+<?php
+/** @var \Mytek\Marketplace\Block\Adminhtml\Reclamation\View $block */
+$r        = $block->getReclamation();
+$messages = $block->getMessages();
+$formKey  = $block->getFormKey();
+$resolved = $block->isResolved();
+$sellerName = trim(($r['firstname'] ?? '') . ' ' . ($r['lastname'] ?? ''));
+?>
+<div class="mk-toolbar">
+    <div>
+        <a class="action-default" href="<?= $block->escapeUrl($block->getBackUrl()) ?>">Retour</a>
+        &nbsp;
+        <strong>Réclamation #<?= $block->getReclamationId() ?></strong> —
+        <?= $block->escapeHtml((string)($r['shop_title'] ?? 'Vendeur')) ?>
+        <?php if ($sellerName !== ''): ?>(<?= $block->escapeHtml($sellerName) ?>, <?= $block->escapeHtml((string)($r['email'] ?? '')) ?>)<?php endif; ?>
+        &nbsp;
+        <span class="<?= $resolved ? 'mk-badge mk-badge--ok' : 'mk-badge mk-badge--pending' ?>"><?= $block->escapeHtml($block->typeLabel()) ?></span>
+    </div>
+    <?php if (!$resolved): ?>
+        <form method="post" action="<?= $block->escapeUrl($block->getResolveUrl()) ?>"
+              onsubmit="return confirm('Marquer cette réclamation comme résolue ? La conversation sera fermée.');">
+            <input type="hidden" name="form_key" value="<?= $block->escapeHtmlAttr($formKey) ?>"/>
+            <button type="submit" class="action-default action-primary">Marquer résolue</button>
+        </form>
+    <?php endif; ?>
+</div>
+
+<div class="mk-thread">
+    <?php if (!$messages): ?>
+        <p class="empty-text">Aucun message dans cette réclamation.</p>
+    <?php endif; ?>
+
+    <?php foreach ($messages as $m): ?>
+        <?php $fromAdmin = $block->isFromAdmin($m); ?>
+        <div class="mk-msg <?= $fromAdmin ? 'mk-msg--admin' : 'mk-msg--seller' ?>">
+            <div class="mk-msg__meta">
+                <span><strong><?= $fromAdmin ? 'Support Mytek' : $block->escapeHtml((string)($r['shop_title'] ?? 'Vendeur')) ?></strong></span>
+                <span><?= $block->escapeHtml($block->formatDateTime($m['created_at'] ?? null)) ?></span>
+            </div>
+            <div class="mk-msg__body"><?= $block->escapeHtml((string)($m['message'] ?? '')) ?></div>
+            <?php if (!empty($m['attachments'])): ?>
+                <div class="mk-msg__files">
+                    Pièces jointes :
+                    <?php foreach ($m['attachments'] as $a): ?>
+                        <a href="<?= $block->escapeUrl($block->getAttachmentUrl($a)) ?>" target="_blank" rel="noopener">
+                            <?= $block->escapeHtml(basename((string)$a['file_path'])) ?>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+    <?php endforeach; ?>
+
+    <?php if (!$resolved): ?>
+        <form method="post" action="<?= $block->escapeUrl($block->getReplyUrl()) ?>" class="mk-form">
+            <input type="hidden" name="form_key" value="<?= $block->escapeHtmlAttr($formKey) ?>"/>
+            <div class="admin__field _required">
+                <label class="admin__field-label" for="mk-reply"><span>Votre réponse</span></label>
+                <div class="admin__field-control">
+                    <textarea id="mk-reply" name="message" class="admin__control-textarea" required
+                              placeholder="Écrivez votre réponse au vendeur…"></textarea>
+                </div>
+            </div>
+            <button type="submit" class="action-default action-primary">Envoyer la réponse</button>
+        </form>
+    <?php else: ?>
+        <p class="mk-readonly">Cette réclamation est résolue — la conversation est fermée.</p>
+    <?php endif; ?>
+</div>

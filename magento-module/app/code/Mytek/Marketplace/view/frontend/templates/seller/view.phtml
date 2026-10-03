@@ -1,0 +1,116 @@
+<?php
+/** @var \Mytek\Marketplace\Block\Seller\View $block */
+$seller = $block->getSeller();
+if (!$seller) {
+    return;
+}
+$sellerId = (int)$seller['seller_id'];
+$products = $block->getProducts();
+// count() force le chargement de la collection (avec le filtre "en stock" appliqué
+// automatiquement par Magento_CatalogInventory) : getSize() ignore ce filtre et
+// annoncerait un nombre supérieur à ce qui est réellement affiché ci-dessous.
+$total = count($products);
+$bounds = $block->getPriceBounds();
+$currentMin = $block->getMinPriceParam();
+$currentMax = $block->getMaxPriceParam();
+$currentSort = $block->getCurrentSort();
+?>
+<div class="mk-shop">
+    <div class="mk-shop__banner">
+        <div class="mk-shop__avatar"><?= $block->escapeHtml($block->getInitial($seller['shop_title'])) ?></div>
+        <div class="mk-shop__info">
+            <h1 class="mk-shop__title"><?= $block->escapeHtml($seller['shop_title']) ?></h1>
+            <?php if ((int)$seller['has_patent'] === 1): ?>
+                <span class="mk-shop__verified">&#10003; V&eacute;rifi&eacute;</span>
+            <?php endif; ?>
+            <?php if (!empty($seller['description'])): ?>
+                <p class="mk-shop__desc"><?= $block->escapeHtml($seller['description']) ?></p>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <div class="mk-shop__layout">
+        <aside class="mk-shop__sidebar">
+            <form method="get" class="mk-filter-form">
+                <input type="hidden" name="id" value="<?= (int)$sellerId ?>">
+                <input type="hidden" name="sort" value="<?= $block->escapeHtmlAttr($currentSort) ?>">
+                <button type="submit" class="mk-filter-btn">Filtrer</button>
+
+                <div class="mk-filter-section">
+                    <div class="mk-filter-title">Prix</div>
+                    <div class="mk-filter-hint">
+                        <?= $block->formatPrice($bounds['min']) ?> &ndash; <?= $block->formatPrice($bounds['max']) ?>
+                    </div>
+                    <div class="mk-filter-price-inputs">
+                        <input type="number" step="0.001" min="0" name="min_price"
+                               placeholder="<?= $block->escapeHtmlAttr(number_format($bounds['min'], 3, '.', '')) ?>"
+                               value="<?= $block->escapeHtmlAttr((string)$currentMin) ?>">
+                        <span>&mdash;</span>
+                        <input type="number" step="0.001" min="0" name="max_price"
+                               placeholder="<?= $block->escapeHtmlAttr(number_format($bounds['max'], 3, '.', '')) ?>"
+                               value="<?= $block->escapeHtmlAttr((string)$currentMax) ?>">
+                    </div>
+                </div>
+            </form>
+        </aside>
+
+        <div class="mk-shop__content">
+            <div class="mk-shop__toolbar">
+                <span class="mk-shop__count"><?= $total ?> produit(s) dans cette boutique</span>
+                <form method="get" class="mk-sort-form">
+                    <input type="hidden" name="id" value="<?= (int)$sellerId ?>">
+                    <?php if ($currentMin !== null): ?>
+                        <input type="hidden" name="min_price" value="<?= $block->escapeHtmlAttr($currentMin) ?>">
+                    <?php endif; ?>
+                    <?php if ($currentMax !== null): ?>
+                        <input type="hidden" name="max_price" value="<?= $block->escapeHtmlAttr($currentMax) ?>">
+                    <?php endif; ?>
+                    <label>
+                        Trier par :
+                        <select name="sort" onchange="this.form.submit()">
+                            <?php foreach ($block->getSortOptions() as $value => $label): ?>
+                                <option value="<?= $block->escapeHtmlAttr($value) ?>" <?= $value === $currentSort ? 'selected' : '' ?>>
+                                    <?= $block->escapeHtml($label) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </label>
+                    <button type="submit" class="mk-sort-btn">OK</button>
+                </form>
+            </div>
+
+            <?php if ($total === 0): ?>
+                <p class="mk-shop__empty">Aucun produit ne correspond &agrave; ces crit&egrave;res.</p>
+            <?php else: ?>
+                <div class="mk-shop__grid">
+                    <?php foreach ($products as $product): ?>
+                        <?php
+                            $special = (float)$product->getData('special_price');
+                            $price = (float)$product->getPrice();
+                            $hasPromo = $special > 0 && $special < $price;
+                            $img = $block->getImageUrl($product);
+                        ?>
+                        <div class="mk-shop__card">
+                            <a class="mk-shop__card-imgwrap" href="<?= $block->escapeUrl($product->getProductUrl()) ?>">
+                                <?php if ($img): ?>
+                                    <img src="<?= $block->escapeUrl($img) ?>" alt="<?= $block->escapeHtmlAttr($product->getName()) ?>" loading="lazy">
+                                <?php endif; ?>
+                            </a>
+                            <a class="mk-shop__card-name" href="<?= $block->escapeUrl($product->getProductUrl()) ?>">
+                                <?= $block->escapeHtml($product->getName()) ?>
+                            </a>
+                            <div class="mk-shop__card-price">
+                                <?php if ($hasPromo): ?>
+                                    <span class="mk-shop__price--old"><?= $block->formatPrice($price) ?></span>
+                                    <span class="mk-shop__price--now"><?= $block->formatPrice($special) ?></span>
+                                <?php else: ?>
+                                    <span class="mk-shop__price--now"><?= $block->formatPrice($price) ?></span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>

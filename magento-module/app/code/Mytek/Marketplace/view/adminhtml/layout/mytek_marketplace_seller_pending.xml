@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Mytek_Marketplace::css/marketplace.css"/>
+    </head>
+    <body>
+        <referenceContainer name="content">
+            <block class="Mytek\Marketplace\Block\Adminhtml\Seller\Grid"
+                   name="mytek.seller.pending"
+                   template="Mytek_Marketplace::seller/grid.phtml">
+                <arguments>
+                    <argument name="pending_only" xsi:type="boolean">true</argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

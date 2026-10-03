@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Tests unitaires du module Mytek_Marketplace : lancer scripts/magento-tests.sh -->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.6/phpunit.xsd"
+         bootstrap="tests-bootstrap.php"
+         colors="true"
+         beStrictAboutOutputDuringTests="true"
+         cacheResult="false">
+    <testsuites>
+        <testsuite name="Mytek_Marketplace">
+            <directory>app/code/Mytek/Marketplace/Test/Unit</directory>
+        </testsuite>
+    </testsuites>
+    <php>
+        <ini name="date.timezone" value="Africa/Tunis"/>
+    </php>
+</phpunit>

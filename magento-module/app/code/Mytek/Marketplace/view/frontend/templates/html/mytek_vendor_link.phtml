@@ -1,0 +1,7 @@
+<?php
+/** Lien "Espace Vendeur" dans l'en-tete, vers l'application Angular Mytek Partenaire. */
+$vendorSpaceUrl = 'http://localhost:4200';
+?>
+<a href="<?= $block->escapeUrl($vendorSpaceUrl) ?>" class="mk-espace-vendeur-link" target="_blank" rel="noopener">
+    <?= $block->escapeHtml(__('Espace Vendeur')) ?>
+</a>

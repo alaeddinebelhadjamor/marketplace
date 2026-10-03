@@ -1,0 +1,81 @@
+<?php
+/** Pied de page repliquant visuellement le vrai site mytek.tn (capture pour le rapport PFE). */
+?>
+<style>
+    .mk-footer { background: #e1e2e4; padding: 24px 0 20px; margin-top: 20px; }
+    .mk-footer__social { display: flex; justify-content: center; gap: 14px; margin-bottom: 22px; }
+    .mk-footer__social a { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; text-decoration: none; }
+    .mk-footer__cols { display: flex; flex-wrap: wrap; gap: 24px; max-width: 1600px; margin: 0 auto; padding: 0 40px; }
+    .mk-footer__col { flex: 1 1 220px; min-width: 200px; }
+    .mk-footer__col h4 { font-size: 14px; font-weight: 700; letter-spacing: .3px; margin: 0 0 14px; color: #1a1a1a; }
+    .mk-footer__col ul { list-style: none; margin: 0; padding: 0; }
+    .mk-footer__col li { margin-bottom: 10px; }
+    .mk-footer__col a { color: #444; text-decoration: none; font-size: 13px; }
+    .mk-footer__contact li { display: flex; gap: 8px; font-size: 13px; color: #333; margin-bottom: 14px; }
+    .mk-footer__newsletter p { font-size: 13px; margin: 0 0 10px; color: #333; }
+    .mk-footer__newsform { display: flex; margin-bottom: 14px; }
+    .mk-footer__newsform input { flex: 1; border: 1px solid #ccc; padding: 8px 10px; font-size: 13px; }
+    .mk-footer__newsform button { background: #26b14f; color: #fff; border: none; padding: 0 16px; font-size: 13px; font-weight: 700; cursor: default; }
+    .mk-footer__pay { display: flex; gap: 6px; flex-wrap: wrap; }
+    .mk-footer__pay span { background: #fff; border: 1px solid #ddd; border-radius: 3px; padding: 3px 7px; font-size: 10px; color: #555; font-weight: 600; }
+</style>
+<div class="mk-footer">
+    <div class="mk-footer__social">
+        <a href="#" style="background:#1877f2;">f</a>
+        <a href="#" style="background:#e1306c;">ig</a>
+        <a href="#" style="background:#ff0000;">yt</a>
+        <a href="#" style="background:#000;">x</a>
+        <a href="#" style="background:#0a66c2;">in</a>
+    </div>
+    <div class="mk-footer__cols">
+        <div class="mk-footer__col">
+            <h4>INFORMATION</h4>
+            <ul>
+                <li><a href="#">À propos</a></li>
+                <li><a href="#">Conditions Générales de Vente</a></li>
+                <li><a href="#">Politique de Confidentialité</a></li>
+                <li><a href="#">Expédition &amp; retour</a></li>
+                <li><a href="#">Achats sécurisés</a></li>
+                <li><a href="#">Statut de la commande</a></li>
+                <li><a href="#">Mode de paiement</a></li>
+                <li><a href="#">Recrutement</a></li>
+            </ul>
+        </div>
+        <div class="mk-footer__col">
+            <h4>NOS SERVICES</h4>
+            <ul>
+                <li><a href="#">Nos magasins</a></li>
+                <li><a href="#">Service Entreprise</a></li>
+                <li><a href="#">Service Clients</a></li>
+                <li><a href="#">Service Drive</a></li>
+                <li><a href="#">Service Livraison</a></li>
+                <li><a href="#">Service après-vente</a></li>
+                <li><a href="#">Nous contacter</a></li>
+                <li><a href="#">Suivez vos commandes</a></li>
+            </ul>
+        </div>
+        <div class="mk-footer__col">
+            <h4>INFORMATIONS DE CONTACT</h4>
+            <ul class="mk-footer__contact">
+                <li>📍 17 Rue Energie Solaire Z.I. Charguia 1, Tunis 2035</li>
+                <li>📞 (+216) 36 360 000</li>
+                <li>✉ info@mytek.tn - devis@mytek.tn</li>
+                <li>🕐 7 jours sur 7,<br>Du Lundi Au Samedi: 08h00 à 19h00<br>Dimanche: 09h00 à 15h00</li>
+            </ul>
+        </div>
+        <div class="mk-footer__col mk-footer__newsletter">
+            <h4>S'INSCRIRE AUX NEWSLETTERS</h4>
+            <p>Inscrivez-vous à la newsletter Mytek</p>
+            <div class="mk-footer__newsform">
+                <input type="email" placeholder="Saisissez votre email" disabled>
+                <button type="button">SOUSCRIRE</button>
+            </div>
+            <div class="mk-footer__pay">
+                <span>CASH à la livraison</span>
+                <span>VISA</span>
+                <span>MasterCard</span>
+                <span>CIB</span>
+            </div>
+        </div>
+    </div>
+</div>

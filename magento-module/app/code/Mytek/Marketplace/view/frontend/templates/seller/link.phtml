@@ -1,0 +1,16 @@
+<?php
+/** @var \Mytek\Marketplace\Block\Seller\Link $block */
+$seller = $block->getSeller();
+if (!$seller) {
+    return;
+}
+?>
+<div class="mk-seller-link">
+    Vendeur :
+    <a href="<?= $block->escapeUrl($block->getShopUrl((int)$seller['seller_id'])) ?>">
+        <?= $block->escapeHtml($seller['shop_title']) ?>
+    </a>
+    <?php if ((int)$seller['has_patent'] === 1): ?>
+        <span class="mk-seller-link__verified">&#10003; V&eacute;rifi&eacute;</span>
+    <?php endif; ?>
+</div>

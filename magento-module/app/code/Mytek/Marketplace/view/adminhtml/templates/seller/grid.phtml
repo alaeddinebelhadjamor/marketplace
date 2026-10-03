@@ -1,0 +1,101 @@
+<?php
+/** @var \Mytek\Marketplace\Block\Adminhtml\Seller\Grid $block */
+$sellers     = $block->getSellers();
+$counts      = $block->getCounts();
+$pendingOnly = $block->isPendingOnly();
+$formKey     = $block->getFormKey();
+$statusFilter = $block->getStatusFilter();
+?>
+<div class="mk-toolbar">
+    <div>
+        <span class="mk-badge mk-badge--pending"><?= (int)$counts[0] ?> en attente</span>
+        <span class="mk-badge mk-badge--ok"><?= (int)$counts[1] ?> validé(s)</span>
+        <span class="mk-badge mk-badge--ko"><?= (int)$counts[2] ?> refusé(s)</span>
+    </div>
+    <?php if (!$pendingOnly): ?>
+    <form method="get" action="<?= $block->escapeUrl($block->getActionUrl('index')) ?>">
+        <input type="text" name="q" class="admin__control-text"
+               placeholder="Rechercher un vendeur (nom, email, magasin)…"
+               value="<?= $block->escapeHtmlAttr($block->getSearch()) ?>"/>
+        <select name="status" class="admin__control-select">
+            <option value="">Tous les statuts</option>
+            <option value="0" <?= $statusFilter === 0 ? 'selected' : '' ?>>En attente</option>
+            <option value="1" <?= $statusFilter === 1 ? 'selected' : '' ?>>Validé</option>
+            <option value="2" <?= $statusFilter === 2 ? 'selected' : '' ?>>Refusé</option>
+        </select>
+        <button type="submit" class="action-default">Filtrer</button>
+    </form>
+    <?php endif; ?>
+</div>
+
+<div class="admin__data-grid-wrap">
+    <table class="data-grid">
+        <thead>
+        <tr>
+            <th class="data-grid-th">ID</th>
+            <th class="data-grid-th">Prénom</th>
+            <th class="data-grid-th">Nom</th>
+            <th class="data-grid-th">Email</th>
+            <th class="data-grid-th">Magasin</th>
+            <th class="data-grid-th">Contact</th>
+            <th class="data-grid-th">Gouvernorat</th>
+            <th class="data-grid-th">Statut</th>
+            <th class="data-grid-th"><?= $pendingOnly ? 'Inscrit le' : 'Créé le' ?></th>
+            <th class="data-grid-th">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php if (!$sellers): ?>
+            <tr>
+                <td colspan="10" class="empty-text">
+                    <?= $pendingOnly ? 'Aucun vendeur en attente de validation.' : 'Aucun vendeur trouvé.' ?>
+                </td>
+            </tr>
+        <?php else: ?>
+            <?php foreach ($sellers as $s): ?>
+                <?php $id = (int)$s['seller_id']; $status = (int)$s['status']; ?>
+                <tr>
+                    <td><?= $id ?></td>
+                    <td><?= $block->escapeHtml($s['firstname']) ?></td>
+                    <td><?= $block->escapeHtml($s['lastname']) ?></td>
+                    <td><?= $block->escapeHtml($s['email']) ?></td>
+                    <td><?= $block->escapeHtml($s['shop_title']) ?></td>
+                    <td><?= $block->escapeHtml($s['contact_number']) ?></td>
+                    <td><?= $block->escapeHtml((string)($s['governorate'] ?? '—')) ?></td>
+                    <td><span class="<?= $block->escapeHtmlAttr($block->statusClass($status)) ?>"><?= $block->escapeHtml($block->statusLabel($status)) ?></span></td>
+                    <td><?= $block->escapeHtml($block->formatDateTime($s['created_at'] ?? null)) ?></td>
+                    <td>
+                        <div class="mk-actions">
+                            <?php if ($status !== 1 && $block->canValidate()): ?>
+                                <form method="post" action="<?= $block->escapeUrl($block->getActionUrl('validate')) ?>">
+                                    <input type="hidden" name="form_key" value="<?= $block->escapeHtmlAttr($formKey) ?>"/>
+                                    <input type="hidden" name="id" value="<?= $id ?>"/>
+                                    <button type="submit" class="action-default action-primary">Valider</button>
+                                </form>
+                            <?php endif; ?>
+                            <?php if ($status === 0 && $block->canValidate()): ?>
+                                <form method="post" action="<?= $block->escapeUrl($block->getActionUrl('refuse')) ?>">
+                                    <input type="hidden" name="form_key" value="<?= $block->escapeHtmlAttr($formKey) ?>"/>
+                                    <input type="hidden" name="id" value="<?= $id ?>"/>
+                                    <button type="submit" class="action-default">Refuser</button>
+                                </form>
+                            <?php endif; ?>
+                            <?php if ($block->canEdit()): ?>
+                                <a class="action-default" href="<?= $block->escapeUrl($block->getActionUrl('edit', ['id' => $id])) ?>">Modifier</a>
+                            <?php endif; ?>
+                            <?php if (!$pendingOnly && $block->canDelete()): ?>
+                                <form method="post" action="<?= $block->escapeUrl($block->getActionUrl('delete')) ?>"
+                                      onsubmit="return confirm('Supprimer définitivement ce vendeur ?');">
+                                    <input type="hidden" name="form_key" value="<?= $block->escapeHtmlAttr($formKey) ?>"/>
+                                    <input type="hidden" name="id" value="<?= $id ?>"/>
+                                    <button type="submit" class="action-default action-secondary">Supprimer</button>
+                                </form>
+                            <?php endif; ?>
+                        </div>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        <?php endif; ?>
+        </tbody>
+    </table>
+</div>

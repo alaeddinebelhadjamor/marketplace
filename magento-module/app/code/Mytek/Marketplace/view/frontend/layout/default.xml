@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Mytek_Marketplace::css/mytek-real.css"/>
+        <css src="Mytek_Marketplace::css/seller.css"/>
+    </head>
+    <body>
+        <referenceBlock name="store_switcher" remove="true"/>
+        <referenceBlock name="footer_links" remove="true"/>
+        <referenceBlock name="copyright" remove="true"/>
+        <referenceBlock name="report.bugs" remove="true"/>
+        <referenceBlock name="form.subscribe" remove="true"/>
+        <referenceContainer name="header.panel">
+            <block class="Magento\Framework\View\Element\Template" name="mytek_vendor_link"
+                   template="Mytek_Marketplace::html/mytek_vendor_link.phtml" after="top.links"/>
+        </referenceContainer>
+        <referenceContainer name="footer">
+            <block class="Magento\Framework\View\Element\Template" name="mytek_footer"
+                   template="Mytek_Marketplace::html/mytek_footer.phtml"/>
+        </referenceContainer>
+    </body>
+</page>

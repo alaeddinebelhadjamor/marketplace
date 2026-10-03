@@ -1,0 +1,80 @@
+<?php
+/** @var \Mytek\Marketplace\Block\Adminhtml\Dashboard $block */
+$k      = $block->getKpis();
+$c      = $block->getSellerCounts();
+$unseen = $block->getUnseenReclamations();
+$sort   = $block->getSort();
+$top    = $block->getTopSellers();
+?>
+<div class="mk-toolbar">
+    <div class="mk-readonly">Données consolidées depuis la base marketplace (commandes synchronisées depuis Magento).</div>
+    <a class="action-default action-primary" href="<?= $block->escapeUrl($block->getExportUrl()) ?>">Extraire Excel (CSV)</a>
+</div>
+
+<div class="mk-kpis">
+    <div class="mk-kpi mk-kpi--blue">
+        <div class="mk-kpi__label">Total commandes</div>
+        <div class="mk-kpi__value"><?= number_format($k['orders'], 0, ',', ' ') ?></div>
+    </div>
+    <div class="mk-kpi mk-kpi--green">
+        <div class="mk-kpi__label">Vendeurs actifs</div>
+        <div class="mk-kpi__value"><?= (int)$k['active_sellers'] ?></div>
+        <?php if ($c[0] > 0): ?>
+            <div class="mk-kpi__hint">
+                <a href="<?= $block->escapeUrl($block->getPendingUrl()) ?>"><?= (int)$c[0] ?> inscription(s) en attente de validation</a>
+            </div>
+        <?php endif; ?>
+    </div>
+    <div class="mk-kpi mk-kpi--orange">
+        <div class="mk-kpi__label">Revenu total</div>
+        <div class="mk-kpi__value"><?= $block->escapeHtml($block->money($k['revenue'])) ?></div>
+    </div>
+    <div class="mk-kpi mk-kpi--grey">
+        <div class="mk-kpi__label">Articles vendus</div>
+        <div class="mk-kpi__value"><?= number_format($k['items'], 0, ',', ' ') ?></div>
+        <?php if ($unseen > 0): ?>
+            <div class="mk-kpi__hint">
+                <a href="<?= $block->escapeUrl($block->getReclamationsUrl()) ?>"><?= $unseen ?> réclamation(s) non lue(s)</a>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<div class="mk-section-title">
+    <h2>Top vendeurs</h2>
+    <div class="mk-tabs">
+        <a href="<?= $block->escapeUrl($block->getSortUrl('revenue')) ?>" class="<?= $sort === 'revenue' ? 'active' : '' ?>">Par revenu</a>
+        <a href="<?= $block->escapeUrl($block->getSortUrl('orders')) ?>" class="<?= $sort === 'orders' ? 'active' : '' ?>">Par commandes</a>
+    </div>
+</div>
+
+<div class="admin__data-grid-wrap">
+    <table class="data-grid">
+        <thead>
+        <tr>
+            <th class="data-grid-th">#</th>
+            <th class="data-grid-th">Vendeur</th>
+            <th class="data-grid-th">Boutique</th>
+            <th class="data-grid-th">Email</th>
+            <th class="data-grid-th">Commandes</th>
+            <th class="data-grid-th">Revenu</th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php if (!$top): ?>
+            <tr><td colspan="6" class="empty-text">Aucune vente enregistrée pour le moment.</td></tr>
+        <?php else: ?>
+            <?php foreach ($top as $i => $row): ?>
+                <tr>
+                    <td><?= $i + 1 ?></td>
+                    <td><?= $block->escapeHtml(trim(($row['firstname'] ?? '') . ' ' . ($row['lastname'] ?? '')) ?: ('Vendeur #' . (int)$row['vendor_id'])) ?></td>
+                    <td><?= $block->escapeHtml((string)($row['shop_title'] ?? '—')) ?></td>
+                    <td><?= $block->escapeHtml((string)($row['email'] ?? '—')) ?></td>
+                    <td><?= (int)$row['orders'] ?></td>
+                    <td><?= $block->escapeHtml($block->money((float)$row['revenue'])) ?></td>
+                </tr>
+            <?php endforeach; ?>
+        <?php endif; ?>
+        </tbody>
+    </table>
+</div>
