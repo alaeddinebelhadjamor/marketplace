@@ -60,6 +60,35 @@ class SellerRepository
         return $row ?: null;
     }
 
+    /** @param int[] $ids @return array<int, array> indexé par seller_id */
+    public function getByIds(array $ids): array
+    {
+        if (!$ids) {
+            return [];
+        }
+        $conn = $this->conn();
+        $rows = $conn->fetchAll($conn->select()->from(self::TABLE)->where('seller_id IN (?)', $ids));
+        $byId = [];
+        foreach ($rows as $row) {
+            $byId[(int)$row['seller_id']] = $row;
+        }
+        return $byId;
+    }
+
+    /**
+     * Nombre de comptes en attente depuis plus de $hours heures (alerte du tableau de bord,
+     * fig. 3.12).
+     */
+    public function countPendingOlderThan(int $hours): int
+    {
+        $conn = $this->conn();
+        return (int)$conn->fetchOne(
+            $conn->select()->from(self::TABLE, new Expression('COUNT(*)'))
+                ->where('status = ?', self::STATUS_PENDING)
+                ->where('created_at < ?', new Expression('NOW() - INTERVAL ' . (int)$hours . ' HOUR'))
+        );
+    }
+
     public function setStatus(int $id, int $status): int
     {
         return $this->conn()->update(

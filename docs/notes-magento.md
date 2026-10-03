@@ -162,3 +162,42 @@ convertie en message lisible).
 |---|---|---|---|
 | C1 | Connexion intégrateur, Marketplace > Envoyer une notification | Écran accessible (200), liste des vendeurs validés | Validé |
 | C2 | Choisir un vendeur, écrire un message, Envoyer | Message de succès, réclamation de type 0 créée (vérifié en base : `admin_viewed=1`, `vendeur_viewed=0`, message conservé) | Validé |
+
+## Incrément 4a — alertes du tableau de bord, produits les plus vus
+
+### Changements
+
+- **Écart 5 de l'audit (alertes partielles, fig. 3.12)** : corrigé. Nouvelle section « Alertes »
+  sur le tableau de bord, remplaçant les deux liens contextuels épars (`Model\Dashboard\
+  AlertsProvider`) :
+  1. vendeurs en attente depuis plus de 48 h (nouveau : `SellerRepository::countPendingOlderThan`) ;
+  2. réclamations non lues (déjà présent, maintenant unifié) ;
+  3. produits de vendeurs en attente de modération (nouveau : `Model\Catalog\SellerProductStats`,
+     requête sur le catalogue Magento seul, statut désactivé + `seller_id` renseigné) ;
+  4. date de la dernière synchronisation des commandes (nouveau :
+     `OrderStats::getLastSyncAt`), avec un avertissement si elle date de plus de 24 h.
+- **Amélioration L (ch. 4 § 4.6, exploitation de `user_product_behavior`)** : nouvelle section
+  « Produits les plus vus » sur le tableau de bord (`Model\Behavior\ProductViewsService`).
+  Les vues sont comptées dans la base marketplace (table `user_product_behavior`), puis les
+  SKU trouvés sont résolus en une seule requête sur le catalogue Magento (nom du produit et
+  `seller_id`) : **aucune jointure SQL entre les deux bases**, conformément à la contrainte
+  d'architecture (corrélation faite en PHP, comme le fait déjà `Block\Seller\Link` pour
+  l'attribut `seller_id`).
+
+### Tests
+
+49 tests unitaires (8 nouveaux, `AlertsProviderTest`) : chaque alerte apparaît ou non selon le
+seuil (48 h, 24 h), ordre des alertes stable, niveau (info/warning/ok) correct.
+`SellerProductStats` et `ProductViewsService` dépendent de collections Magento (EAV, résolution
+catégorie) difficiles à isoler en test unitaire pur ; vérifiés en recette avec des données
+réelles.
+
+### Recette (données réelles du Magento local, 4 octobre 2026)
+
+| # | Alerte / section | Résultat attendu | Obtenu |
+|---|---|---|---|
+| E1 | Vendeurs en attente > 48 h | « 25 inscription(s) ... depuis plus de 48 h », lien vers Validation | Conforme |
+| E2 | Réclamations non lues | « 1 réclamation(s) non lue(s) », lien vers Réclamations | Conforme |
+| E3 | Produits en attente de modération | « 44 produit(s) de vendeur en attente de modération » | Conforme (identique au chiffre de l'audit) |
+| E4 | Dernière synchronisation | « Dernière synchronisation des commandes : 16/09/2026 18:10 », en avertissement (plus de 24 h) | Conforme |
+| L1 | Produits les plus vus | SKU IPH-11-128-YELLOW en tête, nom résolu (« iPhone 11 128G... »), vues correctes | Conforme |

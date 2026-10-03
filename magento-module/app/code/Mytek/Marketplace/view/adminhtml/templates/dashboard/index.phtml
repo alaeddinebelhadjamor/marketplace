@@ -2,10 +2,10 @@
 /** @var \Mytek\Marketplace\Block\Adminhtml\Dashboard $block */
 /** @var \Magento\Framework\Escaper $escaper */
 $k      = $block->getKpis();
-$c      = $block->getSellerCounts();
-$unseen = $block->getUnseenReclamations();
 $sort   = $block->getSort();
 $top    = $block->getTopSellers();
+$alerts = $block->getAlerts();
+$topViewed = $block->getTopViewedProducts();
 ?>
 <div class="mk-toolbar">
     <div class="mk-readonly"><?= $escaper->escapeHtml(__('Data consolidated from the marketplace database (orders synchronised from Magento).')) ?></div>
@@ -20,11 +20,6 @@ $top    = $block->getTopSellers();
     <div class="mk-kpi mk-kpi--green">
         <div class="mk-kpi__label"><?= $escaper->escapeHtml(__('Active sellers')) ?></div>
         <div class="mk-kpi__value"><?= (int)$k['active_sellers'] ?></div>
-        <?php if ($c[0] > 0): ?>
-            <div class="mk-kpi__hint">
-                <a href="<?= $escaper->escapeUrl($block->getPendingUrl()) ?>"><?= $escaper->escapeHtml(__('%1 registration(s) awaiting approval', (int)$c[0])) ?></a>
-            </div>
-        <?php endif; ?>
     </div>
     <div class="mk-kpi mk-kpi--orange">
         <div class="mk-kpi__label"><?= $escaper->escapeHtml(__('Total revenue')) ?></div>
@@ -36,11 +31,21 @@ $top    = $block->getTopSellers();
     </div>
 </div>
 
-<?php if ($unseen > 0): ?>
-    <p class="mk-readonly">
-        <a href="<?= $escaper->escapeUrl($block->getReclamationsUrl()) ?>"><?= $escaper->escapeHtml(__('%1 unread claim(s)', $unseen)) ?></a>
-    </p>
-<?php endif; ?>
+<div class="mk-section-title">
+    <h2><?= $escaper->escapeHtml(__('Alerts')) ?></h2>
+</div>
+<div class="mk-alerts">
+    <?php foreach ($alerts as $alert): ?>
+        <?php $url = $block->alertUrl($alert['url']); ?>
+        <div class="<?= $escaper->escapeHtmlAttr($block->alertClass($alert['level'])) ?>">
+            <?php if ($url): ?>
+                <a href="<?= $escaper->escapeUrl($url) ?>"><?= $escaper->escapeHtml($alert['message']) ?></a>
+            <?php else: ?>
+                <?= $escaper->escapeHtml($alert['message']) ?>
+            <?php endif; ?>
+        </div>
+    <?php endforeach; ?>
+</div>
 
 <div class="mk-section-title">
     <h2><?= $escaper->escapeHtml(__('Top sellers')) ?></h2>
@@ -74,6 +79,41 @@ $top    = $block->getTopSellers();
                     <td><?= $escaper->escapeHtml((string)($row['email'] ?? '—')) ?></td>
                     <td><?= (int)$row['orders'] ?></td>
                     <td><?= $escaper->escapeHtml($block->money((float)$row['revenue'])) ?></td>
+                </tr>
+            <?php endforeach; ?>
+        <?php endif; ?>
+        </tbody>
+    </table>
+</div>
+
+<div class="mk-section-title">
+    <h2><?= $escaper->escapeHtml(__('Most viewed products')) ?></h2>
+</div>
+<div class="mk-readonly">
+    <?= $escaper->escapeHtml(__('Built from the behavioural tracking pipeline (user_product_behavior), one row per product.')) ?>
+</div>
+<div class="admin__data-grid-wrap">
+    <table class="data-grid">
+        <thead>
+        <tr>
+            <th class="data-grid-th">#</th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('SKU')) ?></th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('Product')) ?></th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('Seller')) ?></th>
+            <th class="data-grid-th"><?= $escaper->escapeHtml(__('Views')) ?></th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php if (!$topViewed): ?>
+            <tr><td colspan="5" class="empty-text"><?= $escaper->escapeHtml(__('No behavioural data recorded yet.')) ?></td></tr>
+        <?php else: ?>
+            <?php foreach ($topViewed as $i => $row): ?>
+                <tr>
+                    <td><?= (int)$i + 1 ?></td>
+                    <td><?= $escaper->escapeHtml($row['sku']) ?></td>
+                    <td><?= $escaper->escapeHtml($row['name']) ?></td>
+                    <td><?= $escaper->escapeHtml((string)($row['shop_title'] ?? '—')) ?></td>
+                    <td><?= (int)$row['views'] ?></td>
                 </tr>
             <?php endforeach; ?>
         <?php endif; ?>

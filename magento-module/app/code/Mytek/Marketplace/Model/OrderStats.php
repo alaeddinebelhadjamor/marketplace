@@ -84,4 +84,33 @@ class OrderStats
             ->order('o.processed_at DESC');
         return $conn->fetchAll($select);
     }
+
+    /**
+     * Chiffre d'affaires et commandes par vendeur, sans limite (export des commissions).
+     */
+    public function getRevenueBySeller(): array
+    {
+        $conn = $this->conn();
+        $select = $conn->select()
+            ->from(['o' => self::ORDERS], [
+                'vendor_id',
+                'orders'  => new Expression('COUNT(DISTINCT o.order_id)'),
+                'revenue' => new Expression('COALESCE(SUM(o.price * o.qty), 0)'),
+            ])
+            ->joinLeft(
+                ['s' => self::SELLERS],
+                's.seller_id = o.vendor_id',
+                ['firstname', 'lastname', 'shop_title', 'email']
+            )
+            ->group('o.vendor_id')
+            ->order('revenue DESC');
+        return $conn->fetchAll($select);
+    }
+
+    /** Date de la dernière ligne de commande synchronisée (alerte du tableau de bord). */
+    public function getLastSyncAt(): ?string
+    {
+        $value = $this->conn()->fetchOne($this->conn()->select()->from(self::ORDERS, new Expression('MAX(processed_at)')));
+        return $value ?: null;
+    }
 }

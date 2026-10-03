@@ -5,6 +5,8 @@ namespace Mytek\Marketplace\Block\Adminhtml;
 
 use Magento\Backend\Block\Template;
 use Magento\Backend\Block\Template\Context;
+use Mytek\Marketplace\Model\Behavior\ProductViewsService;
+use Mytek\Marketplace\Model\Dashboard\AlertsProvider;
 use Mytek\Marketplace\Model\OrderStats;
 use Mytek\Marketplace\Model\ReclamationRepository;
 use Mytek\Marketplace\Model\SellerRepository;
@@ -16,6 +18,8 @@ class Dashboard extends Template
         private readonly OrderStats $stats,
         private readonly SellerRepository $sellers,
         private readonly ReclamationRepository $reclamations,
+        private readonly AlertsProvider $alerts,
+        private readonly ProductViewsService $productViews,
         array $data = []
     ) {
         parent::__construct($context, $data);
@@ -34,6 +38,35 @@ class Dashboard extends Template
     public function getUnseenReclamations(): int
     {
         return $this->reclamations->countUnseen();
+    }
+
+    /** @return array<int, array{level:string, message:string, url:?string}> */
+    public function getAlerts(): array
+    {
+        return $this->alerts->getAlerts();
+    }
+
+    public function alertClass(string $level): string
+    {
+        return match ($level) {
+            AlertsProvider::LEVEL_WARNING => 'mk-alert mk-alert--warning',
+            AlertsProvider::LEVEL_OK      => 'mk-alert mk-alert--ok',
+            default                       => 'mk-alert mk-alert--info',
+        };
+    }
+
+    public function alertUrl(?string $key): ?string
+    {
+        return match ($key) {
+            'pending'       => $this->getPendingUrl(),
+            'reclamations'  => $this->getReclamationsUrl(),
+            default         => null,
+        };
+    }
+
+    public function getTopViewedProducts(): array
+    {
+        return $this->productViews->getTopViewed(10);
     }
 
     public function getSort(): string
