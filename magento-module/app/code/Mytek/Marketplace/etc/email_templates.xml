@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Email:etc/email_templates.xsd">
+    <template id="mytek_marketplace_seller_validated" label="Marketplace: seller account approved" file="seller_validated.html" type="html" module="Mytek_Marketplace" area="frontend"/>
+    <template id="mytek_marketplace_seller_refused" label="Marketplace: seller account refused" file="seller_refused.html" type="html" module="Mytek_Marketplace" area="frontend"/>
+</config>

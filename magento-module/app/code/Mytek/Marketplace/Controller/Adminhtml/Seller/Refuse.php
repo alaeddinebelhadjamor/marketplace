@@ -6,14 +6,18 @@ namespace Mytek\Marketplace\Controller\Adminhtml\Seller;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\App\Action\HttpPostActionInterface;
+use Mytek\Marketplace\Model\Email\SellerNotifier;
 use Mytek\Marketplace\Model\SellerRepository;
 
 class Refuse extends Action implements HttpPostActionInterface
 {
     public const ADMIN_RESOURCE = 'Mytek_Marketplace::sellers_validate';
 
-    public function __construct(Context $context, private readonly SellerRepository $sellers)
-    {
+    public function __construct(
+        Context $context,
+        private readonly SellerRepository $sellers,
+        private readonly SellerNotifier $notifier
+    ) {
         parent::__construct($context);
     }
 
@@ -33,6 +37,11 @@ class Refuse extends Action implements HttpPostActionInterface
             $this->messageManager->addSuccessMessage(
                 __('The registration of seller "%1" (%2) has been refused.', $seller['shop_title'], $seller['email'])
             );
+            if (!$this->notifier->sendRefused($seller)) {
+                $this->messageManager->addWarningMessage(
+                    __('The notification email could not be sent to the seller (the refusal was recorded anyway).')
+                );
+            }
         } catch (\Throwable $e) {
             $this->messageManager->addErrorMessage(__('The seller could not be refused: %1', $e->getMessage()));
         }

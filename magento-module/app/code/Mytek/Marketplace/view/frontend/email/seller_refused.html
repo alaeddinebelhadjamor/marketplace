@@ -1,0 +1,22 @@
+<!--
+/**
+ * Compte vendeur refusé (écran Validation vendeurs, tab. 2.14). Écart 2 de l'audit.
+ */
+-->
+<!--@subject {{trans "About your Mytek Marketplace seller account application"}} @-->
+<!--@vars {
+"var seller.shop_title":"Shop name",
+"var seller.firstname":"Seller first name"
+} @-->
+{{template config_path="design/email/header_template"}}
+
+<p class="greeting">{{trans "Hello %name," name=$seller.firstname}}</p>
+<p>
+    {{trans
+        'We have reviewed your seller account application "%shop_title" on Mytek Marketplace, and we are unable to approve it at this time.'
+        shop_title=$seller.shop_title
+    }}
+</p>
+<p>{{trans "If you believe this is a mistake or would like more information, please contact our support team."}}</p>
+
+{{template config_path="design/email/footer_template"}}

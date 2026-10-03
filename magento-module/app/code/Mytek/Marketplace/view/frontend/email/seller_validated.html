@@ -1,0 +1,28 @@
+<!--
+/**
+ * Compte vendeur validé (écran Validation vendeurs, tab. 2.14). Écart 2 de l'audit :
+ * l'écran d'inscription v1 promettait un email de confirmation, jamais envoyé.
+ */
+-->
+<!--@subject {{trans "Your Mytek Marketplace seller account has been approved"}} @-->
+<!--@vars {
+"var seller.shop_title":"Shop name",
+"var seller.firstname":"Seller first name",
+"var vendor_space_url":"Seller space URL"
+} @-->
+{{template config_path="design/email/header_template"}}
+
+<p class="greeting">{{trans "Hello %name," name=$seller.firstname}}</p>
+<p>
+    {{trans
+        'Good news: your seller account "%shop_title" on Mytek Marketplace has been approved by our team.'
+        shop_title=$seller.shop_title
+    }}
+</p>
+<p>{{trans "You can now sign in to your seller space and start managing your catalogue."}}</p>
+<p>
+    {{trans 'Seller space: <a href="%url">%url</a>' url=$vendor_space_url |raw}}
+</p>
+<p>{{trans "Welcome aboard!"}}</p>
+
+{{template config_path="design/email/footer_template"}}

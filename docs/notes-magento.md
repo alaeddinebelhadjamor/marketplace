@@ -246,3 +246,45 @@ La génération porte sur le mois civil en cours par défaut (bouton « Génére
 AAAA-MM ») : comme en recette, si aucune commande Magento n'a été synchronisée ce mois-ci
 (dernière synchronisation le 16 septembre 2026 sur ce poste), la génération répond
 normalement avec 0 relevé. Ce n'est pas une anomalie du module.
+
+## Incrément 5 — email au vendeur à la validation et au refus (Mailpit)
+
+### Changements
+
+- **Écart 2 de l'audit (aucun email au vendeur, alors que l'écran d'inscription v1 le
+  promettait)** : corrigé. Deux modèles d'email du module (`etc/email_templates.xml`,
+  `view/frontend/email/seller_validated.html` et `seller_refused.html`), envoyés via
+  `Magento\Framework\Mail\Template\TransportBuilder` (le mécanisme standard de Magento),
+  depuis un nouveau service `Model\Email\SellerNotifier`.
+- Un échec d'envoi n'empêche jamais la validation ou le refus : la base est déjà mise à jour
+  quand l'email part ; en cas d'échec, l'action reste un succès et un avertissement
+  (« l'email n'a pas pu être envoyé ») s'ajoute au message de confirmation.
+- **Environnement local (demandé avant création)** : conteneur Docker `mailpit`
+  (`axllent/mailpit:latest`, SMTP 1025, interface web 8025, `docker start mailpit` si arrêté).
+  Pour que les emails de Magento (et plus largement tout ce qui appelle `mail()` sous PHP 8.3
+  CLI) partent vers Mailpit : `msmtp` et `msmtp-mta` installés (`apt-get install -y msmtp
+  msmtp-mta`), `/etc/msmtprc` relaie vers `localhost:1025` sans authentification ni TLS, et
+  `/usr/sbin/sendmail` est déjà un lien symbolique standard vers `msmtp` posé par le paquet
+  `msmtp-mta` — aucune modification du `php.ini` n'a été nécessaire (`sendmail_path` pointait
+  déjà vers `/usr/sbin/sendmail -t -i`). Ce réglage est au niveau de l'environnement WSL, pas
+  du module : à refaire sur toute autre machine de développement.
+
+### Tests
+
+60 tests unitaires (6 nouveaux, `SellerNotifierTest`) : bon modèle selon validation/refus,
+email absent ou invalide refusé sans appeler `TransportBuilder`, échec de transport capté et
+renvoyant faux sans exception.
+
+### Recette
+
+| # | Étape | Résultat attendu | Obtenu |
+|---|---|---|---|
+| A1 | `php -r 'mail(...)'` en CLI | Message reçu dans Mailpit (API `/api/v1/messages`) | Validé |
+| A2 | Valider un vendeur en attente | Message de succès, **pas** d'avertissement d'envoi | Validé |
+| A3 | Email reçu dans Mailpit (validation) | Sujet et corps entièrement en français, en-tête/pied de page Magento standard, lien vers l'espace vendeur | Validé (un segment restait en anglais à la première tentative — traduction manquante au CSV, corrigée et revérifiée) |
+| A4 | Refuser un vendeur en attente | Message de succès | Validé |
+| A5 | Email reçu dans Mailpit (refus) | Sujet et corps entièrement en français | Validé |
+
+Effet de bord assumé : les deux comptes de test utilisés pour la recette (vendeurs #10 et #11,
+des comptes « Boutique Test … » créés par d'anciens essais automatisés, pas des vendeurs réels)
+sont restés respectivement validé et refusé.
