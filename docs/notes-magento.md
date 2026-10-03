@@ -90,3 +90,43 @@ validation des noms de fichiers et des types MIME, contrôle de propriété d'un
   (écart 12 bis, cosmétique) : non traité, reporté si une maquette définitive est fournie.
 - Les rôles « Intégrateur » et « Administrateur » restent créés à la main dans ce Magento local
   (traité à l'incrément 2, data patch ACL).
+
+## Incrément 2 — rôles ACL par data patch
+
+### Changements
+
+- **Écart 10 de l'audit (rôles Intégrateur/Administrateur créés à la main, non reproductibles)** :
+  corrigé. Nouveau data patch `Setup\Patch\Data\CreateMarketplaceRoles`, qui reproduit par code
+  les deux rôles « Intégrateur Marketplace » et « Administrateur Marketplace » (ch. 2 § 2.1 :
+  « l'administrateur hérite des capacités de l'intégrateur et les étend »).
+- Ressources accordées à l'intégrateur (ch. 3 § 3.4.2 : « consultation, modification,
+  réclamations ») : catalogue (modération des produits, ch. 2 § 2.6.4), vendeurs (liste +
+  modification, pas de validation ni de suppression), réclamations. Volontairement exclu :
+  le tableau de bord Marketplace, qui porte des données financières réservées à l'administrateur
+  (ch. 2 § 2.1 : « il... supervise les aspects financiers »).
+- L'administrateur reçoit l'accès complet (`Magento_Backend::all`), comme le rôle natif
+  « Administrators ».
+- Le patch suit exactement la logique du contrôleur natif `Magento\User\...\SaveRole` (mêmes
+  appels `setName`/`setRoleType`/`setUserType`, même `RulesFactory::saveRel`), pour rester
+  cohérent avec le reste de Magento.
+- **Idempotent** : si un rôle du même nom existe déjà (cas de ce Magento local, configuré à la
+  main avant ce patch), ses ressources sont simplement remises à cet état, sans doublon ; les
+  comptes déjà rattachés à ces rôles (`integrateur`, `admin.marketplace`) ne sont pas affectés.
+- **Réversible** (`PatchRevertableInterface`) : `revert()` retire les ressources accordées par
+  le patch, sans supprimer les rôles ni désolidariser les comptes qui y sont rattachés — les
+  supprimer romprait leur rattachement, ce qui serait plus destructeur que la situation de
+  départ.
+
+### Recette (vérifiée en se connectant successivement avec un compte de chaque rôle)
+
+| # | Compte | Écran | Résultat attendu | Obtenu |
+|---|---|---|---|---|
+| I1 | Intégrateur | Marketplace > Tableau de bord | 403 (refusé) | 403 |
+| I2 | Intégrateur | Marketplace > Validation vendeurs | 403 (refusé) | 403 |
+| I3 | Intégrateur | Marketplace > Vendeurs | 200 (autorisé) | 200 |
+| I4 | Intégrateur | Catalogue > Produits | 200 (autorisé) | 200 |
+| I5 | Intégrateur | Marketplace > Réclamations | 200 (autorisé) | 200 |
+| I6 | Administrateur | Marketplace > Tableau de bord | 200 (autorisé) | 200 |
+| I7 | Administrateur | Marketplace > Validation vendeurs | 200 (autorisé) | 200 |
+
+Tous validés.
