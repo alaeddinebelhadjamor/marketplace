@@ -40,6 +40,7 @@ return [
     'schedule' => [
         'orders_sync' => env('CRON_ORDERS_SYNC', '* * * * *'),
         'product_views' => env('CRON_PRODUCT_VIEWS', '* * * * *'),
+        'recommender_train' => env('CRON_RECOMMENDER_TRAIN', '0 3 * * *'),
         'timezone' => env('SCHEDULE_TIMEZONE', 'Europe/Paris'),
     ],
 
