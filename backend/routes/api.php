@@ -14,6 +14,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImportController;
 use App\Http\Controllers\ReclamationController;
+use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\StatementController;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
@@ -83,6 +84,12 @@ Route::middleware(['auth.seller', 'throttle:api'])->group(function () {
 Route::middleware('throttle:api')->group(function () {
     Route::get('attachments/view/{filename}', [AttachmentController::class, 'view']);
     Route::get('attachments/download/{filename}', [AttachmentController::class, 'download']);
+});
+
+// --- Recommandations produit (public, widget storefront Magento) -----------
+Route::middleware('throttle:api')->group(function () {
+    Route::get('recommendations', [RecommendationController::class, 'forProduct']);
+    Route::get('recommendations/popular', [RecommendationController::class, 'popular']);
 });
 
 // --- Administration et intégrations (clé x-admin-key) -----------------------

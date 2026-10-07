@@ -1,0 +1,14 @@
+{
+  "name": "marketplace-v2-recommender-embeddings",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Génération hors-ligne des embeddings sémantiques de contenu pour le moteur de recommandation (inférence seule d'un modèle pré-entraîné, pas d'entraînement). Orchestré par php artisan marketplace:build-embeddings.",
+  "scripts": {
+    "build": "node build_content_embeddings.js"
+  },
+  "dependencies": {
+    "@xenova/transformers": "^2.17.2",
+    "dotenv": "^17.2.3",
+    "mysql2": "^3.16.0"
+  }
+}
