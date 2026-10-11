@@ -105,7 +105,8 @@ class ProductViewsSyncService
             'session_id' => $parsed['session_id'],
             'source' => $parsed['source'],
             'device_type' => $parsed['device_type'],
-            'created_at' => now()->format('Y-m-d H:i:s'),
+            // Heure de la visite lue dans le journal ; heure de lecture seulement si elle est illisible.
+            'created_at' => $parsed['visited_at'] ?? now()->format('Y-m-d H:i:s'),
         ];
     }
 

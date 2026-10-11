@@ -6,11 +6,14 @@
 
 use App\Models\UserProductBehavior;
 use App\Services\Behavior\ProductViewsSyncService;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 
-function writeLog(string $file, array $paths): void
+/** Écrit des lignes de journal datées de $visitedAt (deux heures plus tôt par défaut, fuseau +0100). */
+function writeLog(string $file, array $paths, ?Carbon $visitedAt = null): void
 {
-    $lines = array_map(fn ($p) => '10.0.0.1 - - [03/Oct/2026:10:00:00 +0100] "GET '.$p.' HTTP/1.1" 200 100 "-" "Mozilla/5.0"', $paths);
+    $date = ($visitedAt ?? now()->subHours(2))->copy()->setTimezone('+01:00')->format('d/M/Y:H:i:s O');
+    $lines = array_map(fn ($p) => '10.0.0.1 - - ['.$date.'] "GET '.$p.' HTTP/1.1" 200 100 "-" "Mozilla/5.0"', $paths);
     file_put_contents($file, implode("\n", $lines)."\n", FILE_APPEND);
 }
 
@@ -40,6 +43,16 @@ it('insère recherche, vue produit et vue catégorie, puis la jauge Prometheus',
     expect(UserProductBehavior::where('event_type', 'category_view')->value('category_id'))->toBe(42);
 
     $this->get('/metrics')->assertSee('magento_product_views_total{product_sku="ECRAN-24"', false);
+});
+
+it('date chaque événement de l\'heure de la visite, pas de l\'heure de lecture du journal', function () {
+    $visit = now()->subDay()->setTime(10, 15, 32);
+    writeLog($this->log, ['/myteksearch/index/productsearch/?q=ecran', '/ecran-24.html'], $visit);
+
+    app(ProductViewsSyncService::class)->sync($this->log, $this->offset);
+
+    expect(UserProductBehavior::pluck('created_at')->map->format('Y-m-d H:i:s')->unique()->values()->all())
+        ->toBe([$visit->copy()->utc()->format('Y-m-d H:i:s')]);
 });
 
 it('reprend à l\'offset sauvegardé : aucune ligne n\'est traitée deux fois', function () {

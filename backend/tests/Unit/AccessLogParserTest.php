@@ -23,6 +23,14 @@ it('classe une page .html à résoudre (T4-02 et T4-03)', function () {
     expect($e)->type->toBe('html')->slug->toBe('ecran-samsung-24')->device_type->toBe('mobile')->source->toBe('https://google.com');
 });
 
+it('date l\'événement de l\'heure de la visite écrite par Apache, convertie en UTC', function () {
+    $search = (new AccessLogParser)->parse(logLine('/myteksearch/index/productsearch/?q=ecran'));
+    $page = (new AccessLogParser)->parse(logLine('/ecran-samsung-24.html'));
+
+    expect($search['visited_at'])->toBe('2026-10-03 09:15:32')
+        ->and($page['visited_at'])->toBe('2026-10-03 09:15:32');
+});
+
 it('exclut les pages techniques, les sous-dossiers et les erreurs (T4-04)', function (string $line) {
     expect((new AccessLogParser)->parse($line))->toBeNull();
 })->with([
