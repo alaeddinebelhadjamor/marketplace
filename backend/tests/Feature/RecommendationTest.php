@@ -9,6 +9,8 @@
 */
 
 use App\Models\UserProductBehavior;
+use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 
 function behaviorEvent(string $sessionId, string $sku, string $at): array
@@ -69,8 +71,49 @@ it('replie sur la popularité quand le sku demandé est inconnu de tout signal',
         ->and($response->json('results.0.source'))->toBe('popularity');
 });
 
-it('plafonne top_k à 50', function () {
-    $this->getJson('/api/recommendations/popular?top_k=9999')->assertOk();
-    // Pas d'assertion de volume ici (pas de données) : vérifie seulement
-    // que la requête n'échoue pas avec une valeur hors bornes.
+it('plafonne top_k à 50 (T5-06)', function () {
+    // Magento renvoie n'importe quel produit demandé : seul le plafond limite le volume.
+    fakeMagento([
+        'products/*' => fn (Request $request) => Http::response(magentoProduct(basename(parse_url($request->url(), PHP_URL_PATH)), 1)),
+    ]);
+
+    $t0 = now()->subDay();
+    UserProductBehavior::insert(array_map(
+        fn ($i) => behaviorEvent("s{$i}", sprintf('SKU-%02d', $i), $t0->copy()->addSeconds($i)->toDateTimeString()),
+        range(1, 60)
+    ));
+
+    $this->getJson('/api/recommendations/popular?top_k=9999')
+        ->assertOk()
+        ->assertJsonPath('count', 50)
+        ->assertJsonCount(50, 'results');
+});
+
+it('prend en compte un modèle ré-entraîné dès la requête suivante (T5-05)', function () {
+    config([
+        'recommender.models_path' => 'storage/framework/testing/recommender',
+        'recommender.diversity_epsilon' => 0.0,
+    ]);
+    fakeMagento([
+        'products/*' => fn (Request $request) => Http::response(magentoProduct(basename(parse_url($request->url(), PHP_URL_PATH)), 1)),
+    ]);
+
+    $dir = base_path('storage/framework/testing/recommender');
+    File::ensureDirectoryExists($dir);
+    $path = $dir.'/item_factors.json';
+    $write = function (array $vectors, int $mtime) use ($path) {
+        file_put_contents($path, json_encode(['skus' => ['A', 'B', 'C'], 'item_factors' => $vectors]));
+        touch($path, $mtime);
+        clearstatcache(true, $path);
+    };
+
+    // Premier modèle : A est proche de B.
+    $write([[1, 0], [1, 0.1], [0, 1]], time() - 100);
+    expect($this->getJson('/api/recommendations?sku=A&top_k=1')->json('results.0.sku'))->toBe('B');
+
+    // Ré-entraînement : A devient proche de C, le cache doit être ignoré.
+    $write([[1, 0], [0, 1], [1, 0.1]], time());
+    expect($this->getJson('/api/recommendations?sku=A&top_k=1')->json('results.0.sku'))->toBe('C');
+
+    File::deleteDirectory($dir);
 });
