@@ -9,7 +9,6 @@
 */
 
 use App\Models\UserProductBehavior;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 
 function behaviorEvent(string $sessionId, string $sku, string $at): array
@@ -41,7 +40,7 @@ it('recommande un produit co-visité dans la même session (T5-02)', function ()
         'products/CLAVIER-1' => Http::response(magentoProduct('CLAVIER-1', 1)),
     ]);
 
-    $t0 = Carbon::parse('2026-10-01 10:00:00');
+    $t0 = now()->subDay();
     UserProductBehavior::insert([
         behaviorEvent('s1', 'ECRAN-24', $t0->toDateTimeString()),
         behaviorEvent('s1', 'CLAVIER-1', $t0->copy()->addSeconds(20)->toDateTimeString()),
@@ -58,7 +57,7 @@ it('recommande un produit co-visité dans la même session (T5-02)', function ()
 it('replie sur la popularité quand le sku demandé est inconnu de tout signal', function () {
     fakeMagento(['products/ECRAN-24' => Http::response(magentoProduct('ECRAN-24', 1))]);
 
-    $t0 = Carbon::parse('2026-10-01 10:00:00');
+    $t0 = now()->subDay();
     UserProductBehavior::insert([
         behaviorEvent('s1', 'ECRAN-24', $t0->toDateTimeString()),
         behaviorEvent('s2', 'ECRAN-24', $t0->copy()->addMinute()->toDateTimeString()),
