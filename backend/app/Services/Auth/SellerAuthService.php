@@ -6,6 +6,7 @@ use App\Enums\SellerStatus;
 use App\Exceptions\ApiException;
 use App\Models\Seller;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 /**
@@ -115,5 +116,21 @@ class SellerAuthService
     {
         $seller->password_hash = Hash::make($new);
         $seller->save();
+    }
+
+    /**
+     * Révoque les autres accès du vendeur après un changement de mot de passe :
+     * jetons d'API et sessions en base, sauf le jeton et la session de la requête.
+     */
+    public function revokeOtherSessions(Seller $seller, int|string|null $keepTokenId, ?string $keepSessionId): void
+    {
+        $seller->tokens()->when($keepTokenId, fn ($q) => $q->whereKeyNot($keepTokenId))->delete();
+
+        if (config('session.driver') === 'database') {
+            DB::table(config('session.table', 'sessions'))
+                ->where('user_id', $seller->getAuthIdentifier())
+                ->when($keepSessionId, fn ($q) => $q->where('id', '!=', $keepSessionId))
+                ->delete();
+        }
     }
 }
