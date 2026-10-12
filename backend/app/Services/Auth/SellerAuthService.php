@@ -6,6 +6,7 @@ use App\Enums\SellerStatus;
 use App\Exceptions\ApiException;
 use App\Models\Seller;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 /**
@@ -25,7 +26,7 @@ class SellerAuthService
         $shop = trim((string) $attributes['shop_title']);
 
         // Le nom de boutique sert aussi d'identifiant de connexion : il doit être
-        // unique, bien que la table ne porte pas d'index unique sur cette colonne.
+        // unique (index marketplace_seller_shop_title_unique).
         $existing = Seller::query()
             ->where('email', $email)
             ->orWhere('shop_title', $shop)
@@ -45,9 +46,9 @@ class SellerAuthService
         try {
             $seller->save();
         } catch (QueryException $e) {
-            // Inscription simultanée avec le même email : l'index unique tranche.
+            // Inscription simultanée avec le même email ou nom de boutique : l'index unique tranche.
             if (str_contains(strtolower($e->getMessage()), 'unique') || str_contains($e->getMessage(), '1062')) {
-                throw new ApiException('Email déjà utilisé.', 409);
+                throw new ApiException((str_contains($e->getMessage(), 'shop_title') ? 'Nom de boutique' : 'Email').' déjà utilisé.', 409);
             }
             throw $e;
         }
@@ -115,5 +116,21 @@ class SellerAuthService
     {
         $seller->password_hash = Hash::make($new);
         $seller->save();
+    }
+
+    /**
+     * Révoque les autres accès du vendeur après un changement de mot de passe :
+     * jetons d'API et sessions en base, sauf le jeton et la session de la requête.
+     */
+    public function revokeOtherSessions(Seller $seller, int|string|null $keepTokenId, ?string $keepSessionId): void
+    {
+        $seller->tokens()->when($keepTokenId, fn ($q) => $q->whereKeyNot($keepTokenId))->delete();
+
+        if (config('session.driver') === 'database') {
+            DB::table(config('session.table', 'sessions'))
+                ->where('user_id', $seller->getAuthIdentifier())
+                ->when($keepSessionId, fn ($q) => $q->where('id', '!=', $keepSessionId))
+                ->delete();
+        }
     }
 }

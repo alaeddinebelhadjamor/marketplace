@@ -6,6 +6,7 @@
 
 use App\Models\Seller;
 use Database\Factories\SellerFactory;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 
 function registerPayload(array $override = []): array
@@ -45,6 +46,13 @@ describe('POST /api/auth/register', function () {
         $response = $this->postJson('/api/auth/register', registerPayload(['email' => 'autre@example.com']))
             ->assertStatus(409);
         expect($response->json('message'))->toMatch('/boutique/i');
+    });
+
+    it('garantit l\'unicité du nom de boutique en base (index unique)', function () {
+        Seller::factory()->create(['shop_title' => 'Boutique Test']);
+
+        expect(fn () => Seller::factory()->create(['shop_title' => 'Boutique Test']))->toThrow(QueryException::class);
+        expect(Seller::where('shop_title', 'Boutique Test')->count())->toBe(1);
     });
 });
 

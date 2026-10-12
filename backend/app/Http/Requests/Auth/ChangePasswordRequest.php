@@ -11,14 +11,14 @@ class ChangePasswordRequest extends ApiFormRequest
     {
         return [
             'currentPassword' => ['required', 'string', 'max:255'],
-            'newPassword' => ['required', 'string', 'min:6', 'max:255'],
+            'newPassword' => ['required', 'string', 'min:8', 'max:255'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'newPassword.min' => 'Le nouveau mot de passe doit contenir au moins 6 caractères.',
+            'newPassword.min' => 'Le nouveau mot de passe doit contenir au moins 8 caractères.',
         ];
     }
 

@@ -28,7 +28,7 @@ jobs:
         with:
           php-version: '8.4'
           extensions: mbstring, intl, bcmath, gd, zip, pdo_sqlite, sqlite3
-          coverage: none
+          coverage: pcov
 
       - name: Cache Composer
         uses: actions/cache@v4
@@ -41,8 +41,8 @@ jobs:
       - name: Style (Pint)
         run: vendor/bin/pint --test
 
-      - name: Tests (Pest)
-        run: vendor/bin/pest --colors=always
+      - name: Tests et couverture (Pest, seuil 80 %)
+        run: vendor/bin/pest --colors=always --coverage --min=80
 
   frontend:
     name: Frontend (Vue 3, Node 22)

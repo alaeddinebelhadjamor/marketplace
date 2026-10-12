@@ -46,7 +46,7 @@ async function submit() {
             </v-alert>
             <v-form v-else ref="form" @submit.prevent="submit">
               <p class="text-body-2 mb-4">Compte : <strong>{{ email }}</strong></p>
-              <v-text-field v-model="password" label="Nouveau mot de passe" type="password" autocomplete="new-password" :rules="[required('Le mot de passe'), minLength(6, 'Le mot de passe')]" />
+              <v-text-field v-model="password" label="Nouveau mot de passe" type="password" autocomplete="new-password" :rules="[required('Le mot de passe'), minLength(8, 'Le mot de passe')]" />
               <v-text-field v-model="confirmation" label="Confirmation" type="password" autocomplete="new-password" :rules="[required('La confirmation'), sameAsPassword]" />
               <v-alert v-if="error" type="error" variant="tonal" density="compact" class="mb-3">{{ error }}</v-alert>
               <v-btn type="submit" color="primary" block :loading="loading">Enregistrer</v-btn>

@@ -31,7 +31,7 @@ async function changePassword() {
 }
 
 // --- Double authentification ---------------------------------------------
-const tf = reactive({ status: null, password: '', setup: null, code: '', codes: null, loading: false, error: '', success: '' })
+const tf = reactive({ status: null, password: '', setup: null, code: '', disableCode: '', codes: null, loading: false, error: '', success: '' })
 const qr = computed(() => (tf.setup ? DOMPurify.sanitize(tf.setup.qr_svg, { USE_PROFILES: { svg: true } }) : ''))
 
 async function loadTwoFactor() {
@@ -67,8 +67,8 @@ const confirmEnable = () => tfAction(async () => {
 })
 
 const disable = () => tfAction(async () => {
-  await api.delete('/api/profile/two-factor', { data: { password: tf.password } })
-  Object.assign(tf, { password: '', codes: null, success: 'Double authentification désactivée.' })
+  await api.delete('/api/profile/two-factor', { data: { password: tf.password, code: tf.disableCode.trim() } })
+  Object.assign(tf, { password: '', disableCode: '', codes: null, success: 'Double authentification désactivée.' })
   await loadTwoFactor()
   await auth.afterLogin()
 })
@@ -136,7 +136,7 @@ const profileRows = computed(() => [
         <v-card-text style="max-width: 520px">
           <v-form ref="pwdForm" @submit.prevent="changePassword">
             <v-text-field v-model="pwd.current" label="Mot de passe actuel" type="password" autocomplete="current-password" :rules="[required('Le mot de passe actuel')]" />
-            <v-text-field v-model="pwd.next" label="Nouveau mot de passe" type="password" autocomplete="new-password" :rules="[required('Le nouveau mot de passe'), minLength(6, 'Le mot de passe')]" />
+            <v-text-field v-model="pwd.next" label="Nouveau mot de passe" type="password" autocomplete="new-password" :rules="[required('Le nouveau mot de passe'), minLength(8, 'Le mot de passe')]" />
             <v-text-field v-model="pwd.confirm" label="Confirmer le nouveau mot de passe" type="password" autocomplete="new-password" :rules="[required('La confirmation'), matches]" />
             <v-alert v-if="pwd.success" type="success" variant="tonal" density="compact" class="mb-3">{{ pwd.success }}</v-alert>
             <v-alert v-if="pwd.error" type="error" variant="tonal" density="compact" class="mb-3">{{ pwd.error }}</v-alert>
@@ -177,11 +177,12 @@ const profileRows = computed(() => [
               un mot de passe volé ne suffit plus pour accéder à votre boutique.
             </p>
             <v-text-field v-model="tf.password" label="Mot de passe actuel (confirmation)" type="password" autocomplete="current-password" style="max-width: 360px" />
+            <v-text-field v-if="tf.status.enabled" v-model="tf.disableCode" label="Code de l'application ou code de secours (pour désactiver)" autocomplete="one-time-code" data-test="disable-code" style="max-width: 360px" />
             <div class="d-flex flex-wrap ga-2">
               <v-btn v-if="!tf.status.enabled" color="primary" :loading="tf.loading" :disabled="!tf.password" @click="startEnable">Activer la double authentification</v-btn>
               <template v-else>
                 <v-btn variant="outlined" :loading="tf.loading" :disabled="!tf.password" @click="regenerate">Nouveaux codes de secours</v-btn>
-                <v-btn color="error" variant="tonal" :loading="tf.loading" :disabled="!tf.password" @click="disable">Désactiver</v-btn>
+                <v-btn color="error" variant="tonal" :loading="tf.loading" :disabled="!tf.password || !tf.disableCode.trim()" @click="disable">Désactiver</v-btn>
               </template>
             </div>
           </template>

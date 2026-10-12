@@ -9,6 +9,7 @@ use App\Services\Auth\SellerAuthService;
 use App\Support\Audit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Laravel\Sanctum\PersonalAccessToken;
 use Spatie\Activitylog\Models\Activity;
 
 class ProfileController extends Controller
@@ -26,6 +27,14 @@ class ProfileController extends Controller
     {
         $seller = $request->user();
         $this->auth->changePassword($seller, $request->input('currentPassword'), $request->input('newPassword'));
+
+        // Les autres sessions et jetons sont révoqués ; la session courante est conservée.
+        $current = $seller->currentAccessToken();
+        $this->auth->revokeOtherSessions(
+            $seller,
+            $current instanceof PersonalAccessToken ? $current->getKey() : null,
+            $request->hasSession() ? $request->session()->getId() : null,
+        );
 
         Audit::log('password_changed', 'Changement du mot de passe', $seller, $seller);
 

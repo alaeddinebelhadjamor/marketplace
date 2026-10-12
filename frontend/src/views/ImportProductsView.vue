@@ -59,8 +59,8 @@ onBeforeUnmount(() => clearTimeout(timer))
       <v-card>
         <v-card-title class="text-subtitle-1">1. Préparer le fichier</v-card-title>
         <v-card-text>
-          Colonnes : <code>sku</code>, <code>name</code>, <code>price</code> (obligatoires), <code>weight</code>, <code>qty</code>,
-          <code>short_description</code>, <code>description</code>. 500 lignes au maximum, format .xlsx, .xls ou .csv.
+          Colonnes : <code>sku</code>, <code>name</code>, <code>price</code>, <code>qty</code> (obligatoires ; une quantité absente ou nulle fait
+          refuser la ligne), <code>weight</code>, <code>short_description</code>, <code>description</code>. 500 lignes au maximum, format .xlsx, .xls ou .csv.
         </v-card-text>
         <v-card-actions>
           <v-btn prepend-icon="mdi-download" @click="downloadFile('/api/magento/products/imports/template', {}, 'modele_import_produits.xlsx')">Télécharger le modèle</v-btn>

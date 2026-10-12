@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Support\Metrics\MetricsRegistry;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -30,8 +31,13 @@ class MetricsController extends Controller
         'marketplace_products_imported_total' => ['counter', 'Produits traités par l\'import en masse'],
     ];
 
-    public function __invoke(MetricsRegistry $registry): Response
+    public function __invoke(Request $request, MetricsRegistry $registry): Response
     {
+        $token = (string) config('services.metrics.token');
+        if ($token !== '' && ! hash_equals($token, (string) $request->bearerToken())) {
+            return response('Unauthorized'."\n", 401, ['Content-Type' => 'text/plain; charset=utf-8', 'WWW-Authenticate' => 'Bearer']);
+        }
+
         $out = [];
 
         try {

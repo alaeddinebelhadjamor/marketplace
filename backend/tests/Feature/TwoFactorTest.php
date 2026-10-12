@@ -69,10 +69,33 @@ it('accepte un code de secours une seule fois', function () {
     $this->postJson('/api/auth/two-factor-challenge', ['challenge_token' => $login(), 'recovery_code' => $recovery])->assertUnauthorized();
 });
 
-it('désactive la 2FA avec le mot de passe', function () {
+it('désactive la 2FA avec le mot de passe et un code TOTP', function () {
     $seller = Seller::factory()->create();
-    enableTwoFactor($seller);
+    $setup = enableTwoFactor($seller);
+
+    $this->deleteJson('/api/profile/two-factor', ['password' => SellerFactory::PASSWORD])->assertStatus(400);
+    $this->deleteJson('/api/profile/two-factor', ['password' => SellerFactory::PASSWORD, 'code' => '000000'])
+        ->assertStatus(422)->assertJsonPath('message', 'Code de vérification invalide.');
+    expect($seller->fresh()->hasTwoFactorEnabled())->toBeTrue();
+
+    $code = (new Google2FA)->getCurrentOtp($setup['secret']);
+    $this->deleteJson('/api/profile/two-factor', ['password' => 'faux', 'code' => $code])->assertStatus(422);
+    $this->deleteJson('/api/profile/two-factor', ['password' => SellerFactory::PASSWORD, 'code' => $code])->assertOk();
+    expect($seller->fresh()->hasTwoFactorEnabled())->toBeFalse();
+});
+
+it('désactive la 2FA avec le mot de passe et un code de secours', function () {
+    $seller = Seller::factory()->create();
+    $setup = enableTwoFactor($seller);
+
+    $this->deleteJson('/api/profile/two-factor', ['password' => SellerFactory::PASSWORD, 'code' => $setup['recovery_codes'][0]])->assertOk();
+    expect($seller->fresh()->hasTwoFactorEnabled())->toBeFalse();
+});
+
+it('annule une activation non confirmée avec le seul mot de passe', function () {
+    $seller = actingAsSeller();
+    $this->postJson('/api/profile/two-factor', ['password' => SellerFactory::PASSWORD])->assertOk();
 
     $this->deleteJson('/api/profile/two-factor', ['password' => SellerFactory::PASSWORD])->assertOk();
-    expect($seller->fresh()->hasTwoFactorEnabled())->toBeFalse();
+    expect($seller->twoFactor()->exists())->toBeFalse();
 });

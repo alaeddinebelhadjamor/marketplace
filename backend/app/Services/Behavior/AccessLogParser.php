@@ -69,13 +69,16 @@ class AccessLogParser
 
     private function base(string $ip, string $date, string $referrer, string $ua): array
     {
+        // Adresse IP pseudonymisée : HMAC-SHA256 salé par la clé de l'application,
+        // stable d'une ligne à l'autre mais non réversible sans cette clé.
+        $visitor = hash_hmac('sha256', $ip, (string) config('app.key'));
+
         return [
-            'ip' => $ip,
             'visited_at' => $this->visitedAt($date),
             'source' => mb_substr($referrer !== '' && $referrer !== '-' ? $referrer : 'direct', 0, 500),
             'device_type' => preg_match('/mobile|android|iphone/i', $ua) ? 'mobile' : 'desktop',
-            'anonymous_id' => mb_substr($ip, 0, 64),
-            'session_id' => mb_substr($ip.'-'.substr(base64_encode($ua), 0, 10), 0, 128),
+            'anonymous_id' => $visitor,
+            'session_id' => mb_substr($visitor.'-'.substr(base64_encode($ua), 0, 10), 0, 128),
         ];
     }
 

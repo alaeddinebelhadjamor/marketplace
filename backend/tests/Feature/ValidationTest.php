@@ -31,7 +31,7 @@ describe('POST /api/auth/register avec des données invalides', function () {
         $this->postJson('/api/auth/register', [
             'firstname' => 'Test', 'lastname' => 'X', 'email' => 'court@example.com', 'password' => 'abc',
             'shop_title' => 'B2', 'contact_number' => '20000000',
-        ])->assertStatus(400)->assertJsonPath('message', 'Le mot de passe doit contenir au moins 6 caractères.');
+        ])->assertStatus(400)->assertJsonPath('message', 'Le mot de passe doit contenir au moins 8 caractères.');
     });
 });
 

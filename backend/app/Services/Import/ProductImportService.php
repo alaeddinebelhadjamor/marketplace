@@ -146,7 +146,7 @@ class ProductImportService
             'name' => ['required', 'string', 'min:2', 'max:255'],
             'price' => ['required', 'numeric', 'gt:0'],
             'weight' => ['nullable', 'numeric', 'min:0'],
-            'qty' => ['nullable', 'integer', 'min:0'],
+            'qty' => ['required', 'integer', 'min:1'],
         ], [
             'sku.required' => 'SKU obligatoire.',
             'sku.regex' => "SKU invalide : 3 à 64 caractères, lettres, chiffres, '.', '_' ou '-' uniquement.",
@@ -157,7 +157,9 @@ class ProductImportService
             'price.numeric' => 'Le prix doit être un nombre strictement positif.',
             'price.gt' => 'Le prix doit être un nombre strictement positif.',
             'weight.numeric' => 'Le poids doit être un nombre positif.',
-            'qty.integer' => 'La quantité doit être un entier positif.',
+            'qty.required' => 'Quantité obligatoire (entier strictement positif).',
+            'qty.integer' => 'La quantité doit être un entier strictement positif.',
+            'qty.min' => 'La quantité doit être un entier strictement positif.',
         ]);
 
         return $validator->fails() ? $validator->errors()->first() : null;
@@ -181,7 +183,7 @@ class ProductImportService
             'type_id' => 'simple',
             'visibility' => 4,
             'extension_attributes' => ['stock_item' => [
-                'qty' => (int) ($row['qty'] ?? 0) ?: 10000,
+                'qty' => (int) $row['qty'],
                 'is_in_stock' => true,
                 'manage_stock' => true,
             ]],

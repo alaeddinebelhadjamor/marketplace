@@ -61,7 +61,7 @@ defineExpose({ data, valid })
                 <v-col cols="12" sm="6"><v-text-field v-model="data.firstname" label="Prénom *" autocomplete="given-name" :rules="[required('Le prénom')]" /></v-col>
                 <v-col cols="12" sm="6"><v-text-field v-model="data.lastname" label="Nom *" autocomplete="family-name" :rules="[required('Le nom')]" /></v-col>
                 <v-col cols="12" sm="6"><v-text-field v-model="data.email" label="Email professionnel *" type="email" autocomplete="email" :rules="[required('L\'email'), email]" data-test="email" /></v-col>
-                <v-col cols="12" sm="6"><v-text-field v-model="data.password" label="Mot de passe *" type="password" autocomplete="new-password" hint="6 caractères minimum" :rules="[required('Le mot de passe'), minLength(6, 'Le mot de passe')]" /></v-col>
+                <v-col cols="12" sm="6"><v-text-field v-model="data.password" label="Mot de passe *" type="password" autocomplete="new-password" hint="8 caractères minimum" :rules="[required('Le mot de passe'), minLength(8, 'Le mot de passe')]" /></v-col>
                 <v-col cols="12" sm="6"><v-text-field v-model="data.contact_number" label="Téléphone *" autocomplete="tel" placeholder="20 123 456" :rules="[required('Le numéro')]" /></v-col>
                 <v-col cols="12" sm="6"><v-text-field v-model="data.shop_title" label="Nom du magasin (enseigne) *" hint="Le nom affiché sur le site, il sert aussi d'identifiant" :rules="[required('Le nom du magasin')]" /></v-col>
                 <v-col cols="12" sm="6"><v-text-field v-model="data.company" label="Société" autocomplete="organization" /></v-col>
