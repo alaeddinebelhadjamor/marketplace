@@ -29,20 +29,30 @@ it('crée les lignes valides, rejette les autres et produit un rapport', functio
 
     $csv = "sku,name,price,weight,qty,short_description,description\n"
         ."OK-1,Souris,49.9,0.2,10,Court,Long\n"
-        ."OK-2,Clavier,89,,,,\n"
-        ."mauvais sku,Produit,10,,,,\n"
-        ."OK-3,X,10,,,,\n"
-        ."OK-4,Écran,-5,,,,\n"
-        ."EXISTE-1,Déjà là,10,,,,\n"
-        ."OK-1,Doublon,10,,,,\n";
+        ."OK-2,Clavier,89,,5,,\n"
+        ."mauvais sku,Produit,10,,1,,\n"
+        ."OK-3,X,10,,1,,\n"
+        ."OK-4,Écran,-5,,1,,\n"
+        ."EXISTE-1,Déjà là,10,,1,,\n"
+        ."OK-1,Doublon,10,,1,,\n"
+        ."SANS-QTE,Câble,15,,,,\n"
+        ."QTE-ZERO,Hub,20,,0,,\n";
 
     $id = $this->post('/api/magento/products/imports', ['file' => csvUpload($csv)], ['Accept' => 'application/json'])
         ->assertStatus(202)->json('id');
 
     $import = ProductImport::find($id);
-    expect($import)->status->toBe('done')->total_rows->toBe(7)->success_rows->toBe(2)->failed_rows->toBe(5);
-    expect(collect($import->errors)->pluck('row')->all())->toBe([4, 5, 6, 7, 8]);
+    expect($import)->status->toBe('done')->total_rows->toBe(9)->success_rows->toBe(2)->failed_rows->toBe(7);
+    expect(collect($import->errors)->pluck('row')->all())->toBe([4, 5, 6, 7, 8, 9, 10]);
     expect(collect($import->errors)->firstWhere('row', 7)['message'])->toBe('Un produit avec le même SKU existe déjà');
+
+    // Quantité absente ou nulle : ligne refusée et consignée, plus de stock par défaut.
+    expect(collect($import->errors)->firstWhere('row', 9)['message'])->toBe('Quantité obligatoire (entier strictement positif).')
+        ->and(collect($import->errors)->firstWhere('row', 10)['message'])->toBe('La quantité doit être un entier strictement positif.');
+    Http::assertSent(fn (Request $r) => $r->method() === 'POST' && str_ends_with($r->url(), '/products')
+        && $r['product']['sku'] === 'OK-2' && $r['product']['extension_attributes']['stock_item']['qty'] === 5);
+    Http::assertNotSent(fn (Request $r) => $r->method() === 'POST' && str_ends_with($r->url(), '/products')
+        && in_array($r['product']['sku'], ['SANS-QTE', 'QTE-ZERO'], true));
 
     Http::assertSent(fn (Request $r) => $r->method() === 'POST' && str_ends_with($r->url(), '/products')
         && $r['product']['status'] === 2
