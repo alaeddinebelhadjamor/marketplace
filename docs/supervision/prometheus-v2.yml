@@ -6,6 +6,11 @@
   - job_name: marketplace-v2
     scrape_interval: 15s
     metrics_path: /metrics
+    # Jeton METRICS_TOKEN de l'API, lu dans un fichier à côté de prometheus.yml
+    # (à supprimer si METRICS_TOKEN est vide).
+    authorization:
+      type: Bearer
+      credentials_file: metrics_token.txt
     static_configs:
       - targets: ['localhost:8010']
         labels:

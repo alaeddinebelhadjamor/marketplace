@@ -35,6 +35,14 @@ it('expose les jauges métier', function () {
         ->toContain('app_up 1');
 });
 
+it('exige le jeton Bearer quand METRICS_TOKEN est défini', function () {
+    config(['services.metrics.token' => 'jeton-de-test']);
+
+    $this->get('/metrics')->assertUnauthorized();
+    $this->withToken('mauvais')->get('/metrics')->assertUnauthorized();
+    expect($this->withToken('jeton-de-test')->get('/metrics')->assertOk()->getContent())->toContain('app_up 1');
+});
+
 it('mesure les appels à Magento', function () {
     $seller = actingAsSeller();
     fakeMagento(['products/A1' => Http::response(magentoProduct('A1', $seller->seller_id))]);

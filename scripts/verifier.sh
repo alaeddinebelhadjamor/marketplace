@@ -7,6 +7,7 @@ API="${API_URL:-http://127.0.0.1:8010}"
 ID="${1:-test.auto.1789485162300@example.com}"
 PW="${2:-MotDePasse123!}"
 KEY="$(grep '^ADMIN_API_KEY=' "$ROOT/backend/.env" | cut -d= -f2- | tr -d "\"'")"
+MTOKEN="$(grep '^METRICS_TOKEN=' "$ROOT/backend/.env" | cut -d= -f2- | tr -d "\"'")"
 ok=0; ko=0
 
 check() { # libellé, code attendu, code obtenu
@@ -16,7 +17,12 @@ code() { curl -s -o /dev/null -w '%{http_code}' "$@"; }
 
 echo "Vérification de $API"
 check "GET /" 200 "$(code "$API/")"
-check "GET /metrics" 200 "$(code "$API/metrics")"
+if [ -n "$MTOKEN" ]; then
+  check "GET /metrics sans jeton" 401 "$(code "$API/metrics")"
+  check "GET /metrics avec jeton" 200 "$(code -H "Authorization: Bearer $MTOKEN" "$API/metrics")"
+else
+  check "GET /metrics" 200 "$(code "$API/metrics")"
+fi
 check "GET /up (santé Laravel)" 200 "$(code "$API/up")"
 check "stats sans clé" 401 "$(code "$API/api/stats/sellers")"
 check "stats avec clé" 200 "$(code -H "x-admin-key: $KEY" "$API/api/stats/sellers")"

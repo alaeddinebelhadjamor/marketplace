@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    // Jeton exigé (en Bearer) par GET /metrics ; vide = accès libre (développement).
+    'metrics' => [
+        'token' => env('METRICS_TOKEN'),
+    ],
+
 ];
