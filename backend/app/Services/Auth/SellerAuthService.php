@@ -26,7 +26,7 @@ class SellerAuthService
         $shop = trim((string) $attributes['shop_title']);
 
         // Le nom de boutique sert aussi d'identifiant de connexion : il doit être
-        // unique, bien que la table ne porte pas d'index unique sur cette colonne.
+        // unique (index marketplace_seller_shop_title_unique).
         $existing = Seller::query()
             ->where('email', $email)
             ->orWhere('shop_title', $shop)
@@ -46,9 +46,9 @@ class SellerAuthService
         try {
             $seller->save();
         } catch (QueryException $e) {
-            // Inscription simultanée avec le même email : l'index unique tranche.
+            // Inscription simultanée avec le même email ou nom de boutique : l'index unique tranche.
             if (str_contains(strtolower($e->getMessage()), 'unique') || str_contains($e->getMessage(), '1062')) {
-                throw new ApiException('Email déjà utilisé.', 409);
+                throw new ApiException((str_contains($e->getMessage(), 'shop_title') ? 'Nom de boutique' : 'Email').' déjà utilisé.', 409);
             }
             throw $e;
         }
