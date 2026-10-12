@@ -37,5 +37,14 @@ export default defineConfig({
     setupFiles: ['./tests/setup.js'],
     server: { deps: { inline: ['vuetify'] } },
     css: false,
+    // Montages Vuetify lents quand toute la suite tourne en parallèle avec la couverture.
+    testTimeout: 15000,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html'],
+      include: ['src/**'],
+      // Objectif O6 : au moins 50 % des lignes couvertes, sinon la commande échoue.
+      thresholds: { lines: 50 },
+    },
   },
 })

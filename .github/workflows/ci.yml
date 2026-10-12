@@ -61,8 +61,8 @@ jobs:
 
       - run: npm ci
 
-      - name: Tests (Vitest)
-        run: npm test
+      - name: Tests et couverture (Vitest, seuil 50 % des lignes)
+        run: npm run test:coverage
 
       - name: Compilation
         run: npm run build
