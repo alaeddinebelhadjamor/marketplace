@@ -32,6 +32,36 @@ it('refuse un ancien mot de passe faux (401) ou des champs manquants (400)', fun
         ->assertStatus(400)->assertJsonPath('message', 'Champs requis manquants.');
 });
 
+it('refuse un nouveau mot de passe de moins de 8 caractères (400)', function () {
+    $seller = actingAsSeller();
+    $this->putJson('/api/profile/change-password', ['currentPassword' => SellerFactory::PASSWORD, 'newPassword' => 'Court12'])
+        ->assertStatus(400)->assertJsonPath('message', 'Le nouveau mot de passe doit contenir au moins 8 caractères.');
+    expect(password_verify(SellerFactory::PASSWORD, $seller->fresh()->password_hash))->toBeTrue();
+});
+
+it('laisse se connecter un compte existant dont le mot de passe fait moins de 8 caractères', function () {
+    $seller = Seller::factory()->create(['password_hash' => password_hash('abc123', PASSWORD_BCRYPT)]);
+
+    $this->postJson('/api/auth/login', ['identifier' => $seller->email, 'password' => 'abc123'])->assertOk();
+});
+
+it('refuse une réinitialisation avec un mot de passe de moins de 8 caractères (400)', function () {
+    Notification::fake();
+    $seller = Seller::factory()->create();
+    $this->postJson('/api/auth/forgot-password', ['email' => $seller->email]);
+
+    $token = null;
+    Notification::assertSentTo($seller, ResetPassword::class, function (ResetPassword $n) use (&$token) {
+        $token = $n->token;
+
+        return true;
+    });
+
+    $this->postJson('/api/auth/reset-password', ['token' => $token, 'email' => $seller->email, 'password' => 'Court12', 'password_confirmation' => 'Court12'])
+        ->assertStatus(400);
+    $this->postJson('/api/auth/login', ['identifier' => $seller->email, 'password' => 'Court12'])->assertUnauthorized();
+});
+
 it('envoie un lien de réinitialisation sans révéler si le compte existe', function () {
     Notification::fake();
     $seller = Seller::factory()->create();

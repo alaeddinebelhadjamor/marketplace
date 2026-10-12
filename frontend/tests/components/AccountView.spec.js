@@ -70,6 +70,21 @@ describe('Mon compte', () => {
     expect(wrapper.text()).toContain('Mot de passe modifié.')
   })
 
+  it('refuse un nouveau mot de passe de moins de 8 caractères', async () => {
+    apiOk()
+    const { wrapper } = await mountView(AccountView)
+    await tab('Mot de passe')
+
+    const [current, next, confirm] = wrapper.findAll('input[type=password]')
+    await current.setValue('ancienMdp1')
+    await next.setValue('Court12')
+    await confirm.setValue('Court12')
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+    expect(wrapper.text()).toContain('Le mot de passe doit contenir au moins 8 caractères.')
+    expect(api.put).not.toHaveBeenCalled()
+  })
+
   it('active la double authentification (QR code, codes de secours, confirmation)', async () => {
     apiOk()
     api.post.mockImplementation((url) => Promise.resolve({ data: url === '/api/profile/two-factor'

@@ -136,7 +136,7 @@ const profileRows = computed(() => [
         <v-card-text style="max-width: 520px">
           <v-form ref="pwdForm" @submit.prevent="changePassword">
             <v-text-field v-model="pwd.current" label="Mot de passe actuel" type="password" autocomplete="current-password" :rules="[required('Le mot de passe actuel')]" />
-            <v-text-field v-model="pwd.next" label="Nouveau mot de passe" type="password" autocomplete="new-password" :rules="[required('Le nouveau mot de passe'), minLength(6, 'Le mot de passe')]" />
+            <v-text-field v-model="pwd.next" label="Nouveau mot de passe" type="password" autocomplete="new-password" :rules="[required('Le nouveau mot de passe'), minLength(8, 'Le mot de passe')]" />
             <v-text-field v-model="pwd.confirm" label="Confirmer le nouveau mot de passe" type="password" autocomplete="new-password" :rules="[required('La confirmation'), matches]" />
             <v-alert v-if="pwd.success" type="success" variant="tonal" density="compact" class="mb-3">{{ pwd.success }}</v-alert>
             <v-alert v-if="pwd.error" type="error" variant="tonal" density="compact" class="mb-3">{{ pwd.error }}</v-alert>

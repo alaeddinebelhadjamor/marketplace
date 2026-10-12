@@ -24,7 +24,7 @@ class RegisterRequest extends ApiFormRequest
             'firstname' => ['required', 'string', 'max:255'],
             'lastname' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'max:255', 'regex:'.self::EMAIL_PATTERN],
-            'password' => ['required', 'string', 'min:6', 'max:255'],
+            'password' => ['required', 'string', 'min:8', 'max:255'],
             'shop_title' => ['required', 'string', 'max:255'],
             'contact_number' => ['required', 'string', 'max:255'],
             'company' => ['nullable', 'string', 'max:255'],
@@ -42,7 +42,7 @@ class RegisterRequest extends ApiFormRequest
     {
         return [
             'email.regex' => 'Adresse email invalide.',
-            'password.min' => 'Le mot de passe doit contenir au moins 6 caractères.',
+            'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
         ];
     }
 
