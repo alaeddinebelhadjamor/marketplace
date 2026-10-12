@@ -31,6 +31,7 @@
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
+        <env name="METRICS_TOKEN" value=""/>
         <env name="FRONTEND_URL" value="http://localhost:5180"/>
         <env name="SANCTUM_STATEFUL_DOMAINS" value="localhost:5180"/>
         <env name="ADMIN_API_KEY" value="cle-admin-de-test"/>
