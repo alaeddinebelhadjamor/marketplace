@@ -2,7 +2,7 @@ import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
 import { fr } from 'vuetify/locale'
 
-// Charte Mytek : rouge #c70a0a, bleu nuit pour les éléments secondaires.
+// Charte Mytek (relevée sur mytek.tn) : rouge #c70a0a, police Open Sans, bleu nuit pour les éléments secondaires.
 export default createVuetify({
   locale: { locale: 'fr', messages: { fr } },
   theme: {

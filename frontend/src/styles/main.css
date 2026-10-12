@@ -1,5 +1,5 @@
 /* Styles globaux de l'espace vendeur (le reste est porté par Vuetify). */
-html, body { font-family: 'Roboto', system-ui, -apple-system, 'Segoe UI', sans-serif; }
+html, body { font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, system-ui, -apple-system, 'Segoe UI', sans-serif; }
 
 .page-title { font-size: 1.5rem; font-weight: 600; margin: 0; }
 .page-subtitle { color: rgba(0, 0, 0, 0.6); margin: 4px 0 0; }
@@ -9,3 +9,11 @@ html, body { font-family: 'Roboto', system-ui, -apple-system, 'Segoe UI', sans-s
 .clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
 .chart { width: 100%; height: 320px; }
+
+/* Vuetify impose Roboto : on applique la police de mytek.tn. */
+.v-application, .v-application .text-h1, .v-application .text-h2, .v-application .text-h3,
+.v-application .text-h4, .v-application .text-h5, .v-application .text-h6, .v-application .text-body-1,
+.v-application .text-body-2, .v-application .text-caption, .v-application .text-subtitle-1,
+.v-application .text-subtitle-2, .v-application .text-button, .v-application .text-overline {
+  font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+}

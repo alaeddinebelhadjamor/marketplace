@@ -1,0 +1,10 @@
+<?php
+/** @var \Magento\Framework\View\Element\Template $block */
+/** @var \Magento\Framework\Escaper $escaper */
+?>
+<div class="mk-brand">
+    <img class="mk-brand__logo"
+         src="<?= $escaper->escapeUrl($block->getViewFileUrl('Mytek_Marketplace::images/logo_mytek.png')) ?>"
+         alt="Mytek"/>
+    <span class="mk-brand__label"><?= $escaper->escapeHtml(__('Marketplace')) ?></span>
+</div>

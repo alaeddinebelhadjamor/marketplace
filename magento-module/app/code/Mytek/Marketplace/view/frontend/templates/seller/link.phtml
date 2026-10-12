@@ -12,6 +12,6 @@ if (!$seller) {
         <?= $escaper->escapeHtml($seller['shop_title']) ?>
     </a>
     <?php if ((int)$seller['has_patent'] === 1): ?>
-        <span class="mk-seller-link__verified">&#10003; <?= $escaper->escapeHtml(__('Verified')) ?></span>
+        <span class="mk-seller-link__verified" title="<?= $escaper->escapeHtmlAttr(__('The seller declares holding a business licence. Mytek has not checked this document.')) ?>"><?= $escaper->escapeHtml(__('Business licence declared')) ?></span>
     <?php endif; ?>
 </div>

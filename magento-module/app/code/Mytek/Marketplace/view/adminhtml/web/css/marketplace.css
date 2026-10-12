@@ -102,3 +102,21 @@
 .mk-alert--warning { border-left-color: #eb5202; background: #fff2d6; color: #7a4a00; }
 .mk-alert--info    { border-left-color: #1979c3; background: #eef5fb; color: #1a4e75; }
 .mk-alert--ok      { border-left-color: #1f7a34; background: #e3f4e6; color: #1f7a34; }
+
+.mk-brand {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #c70a0a;
+}
+.mk-brand__logo { height: 4.4rem; width: auto; }
+.mk-brand__label {
+    font-size: 1.4rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #c70a0a;
+    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}

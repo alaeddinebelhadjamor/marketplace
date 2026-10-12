@@ -55,6 +55,7 @@ async function logout() {
 
   <v-app-bar flat border="b">
     <v-app-bar-nav-icon v-if="!mdAndUp" aria-label="Ouvrir le menu" @click="drawer = !drawer" />
+    <BrandLogo v-if="!mdAndUp" class="ml-1" />
     <v-app-bar-title class="text-body-1">
       <span class="text-medium-emphasis">Boutique</span> <strong>{{ auth.seller?.shop_title }}</strong>
     </v-app-bar-title>
