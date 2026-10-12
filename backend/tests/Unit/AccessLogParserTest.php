@@ -31,6 +31,22 @@ it('date l\'événement de l\'heure de la visite écrite par Apache, convertie e
         ->and($page['visited_at'])->toBe('2026-10-03 09:15:32');
 });
 
+it('pseudonymise l\'adresse IP par un HMAC salé avec la clé de l\'application', function () {
+    $a = (new AccessLogParser)->parse(logLine('/ecran-samsung-24.html'));
+    $b = (new AccessLogParser)->parse(logLine('/myteksearch/index/productsearch/?q=ecran'));
+    $hmac = hash_hmac('sha256', '41.226.10.5', (string) config('app.key'));
+
+    expect($a['anonymous_id'])->toBe($hmac)->toHaveLength(64)
+        ->and($a['session_id'])->toStartWith($hmac.'-')
+        ->and($b['anonymous_id'])->toBe($a['anonymous_id'])
+        ->and($b['session_id'])->toBe($a['session_id'])
+        ->and(json_encode($a))->not->toContain('41.226.10.5')
+        ->and($a)->not->toHaveKey('ip');
+
+    config(['app.key' => 'base64:'.base64_encode(random_bytes(32))]);
+    expect((new AccessLogParser)->parse(logLine('/ecran-samsung-24.html'))['anonymous_id'])->not->toBe($hmac);
+});
+
 it('exclut les pages techniques, les sous-dossiers et les erreurs (T4-04)', function (string $line) {
     expect((new AccessLogParser)->parse($line))->toBeNull();
 })->with([
