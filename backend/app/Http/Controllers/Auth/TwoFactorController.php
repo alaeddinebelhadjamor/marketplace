@@ -62,11 +62,25 @@ class TwoFactorController extends Controller
         return response()->json(['message' => 'Double authentification activée.']);
     }
 
-    /** DELETE /api/profile/two-factor */
+    /**
+     * DELETE /api/profile/two-factor : mot de passe, plus un code TOTP ou un
+     * code de secours si la 2FA est confirmée (une activation en attente
+     * s'annule avec le seul mot de passe).
+     */
     public function disable(Request $request): JsonResponse
     {
         $seller = $request->user();
         $this->requirePassword($request);
+
+        $tf = $seller->twoFactor()->first();
+        if ($tf?->confirmed_at) {
+            $request->validate(['code' => ['required', 'string', 'max:32']]);
+            $code = (string) $request->input('code');
+            if (! $this->twoFactor->verifyCode($tf, $code) && ! $this->twoFactor->useRecoveryCode($tf, $code)) {
+                throw new ApiException('Code de vérification invalide.', 422);
+            }
+        }
+
         $this->twoFactor->disable($seller);
 
         Audit::log('two_factor_disabled', 'Désactivation de la double authentification', $seller, $seller);

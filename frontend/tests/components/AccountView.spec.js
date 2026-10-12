@@ -116,23 +116,28 @@ describe('Mon compte', () => {
     expect(wrapper.text()).toContain('8 code(s) de secours restant(s)')
   })
 
-  it('désactive la double authentification et affiche les refus de l\'API', async () => {
+  it('désactive la double authentification avec le mot de passe et un code, et affiche les refus de l\'API', async () => {
     twoFactor = { enabled: true, recovery_codes_left: 5 }
     apiOk()
     const { wrapper } = await mountView(AccountView)
     await tab('Double authentification')
-    await wrapper.find('input[type=password]').setValue('mauvais')
+    const disableBtn = () => wrapper.findAll('button').find((b) => b.text() === 'Désactiver')
+    await wrapper.find('input[type=password]').setValue('monMotDePasse')
+    expect(disableBtn().attributes('disabled')).toBeDefined()
 
-    api.delete.mockRejectedValueOnce({ response: { status: 422, data: { message: 'Mot de passe incorrect.' } } })
-    await wrapper.findAll('button').find((b) => b.text() === 'Désactiver').trigger('click')
+    await wrapper.find('[data-test=disable-code] input').setValue('000000')
+    expect(disableBtn().attributes('disabled')).toBeUndefined()
+    api.delete.mockRejectedValueOnce({ response: { status: 422, data: { message: 'Code de vérification invalide.' } } })
+    await disableBtn().trigger('click')
     await flushPromises()
-    expect(wrapper.text()).toContain('Mot de passe incorrect.')
+    expect(wrapper.text()).toContain('Code de vérification invalide.')
 
+    await wrapper.find('[data-test=disable-code] input').setValue(' 123456 ')
     api.delete.mockResolvedValueOnce({ data: {} })
     twoFactor = { enabled: false, recovery_codes_left: 0 }
-    await wrapper.findAll('button').find((b) => b.text() === 'Désactiver').trigger('click')
+    await disableBtn().trigger('click')
     await flushPromises()
-    expect(api.delete).toHaveBeenLastCalledWith('/api/profile/two-factor', { data: { password: 'mauvais' } })
+    expect(api.delete).toHaveBeenLastCalledWith('/api/profile/two-factor', { data: { password: 'monMotDePasse', code: '123456' } })
     expect(wrapper.text()).toContain('Double authentification désactivée.')
   })
 
