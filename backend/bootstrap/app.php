@@ -10,6 +10,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
@@ -40,6 +41,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth.seller' => AuthenticateSeller::class,
             'admin.key' => RequireAdminKey::class,
         ]);
+
+        // Identifier le vendeur avant la limitation de débit : sans cela, « throttle:api »
+        // compte par adresse IP et tous les vendeurs d'une même adresse partagent la limite.
+        $middleware->prependToPriorityList(before: ThrottleRequests::class, prepend: AuthenticateSeller::class);
 
         $middleware->append(SecurityHeaders::class);
         $middleware->append(RecordHttpMetrics::class);
