@@ -4,6 +4,7 @@ use App\Jobs\SyncDailyOrdersJob;
 use App\Jobs\SyncProductViewsJob;
 use App\Services\Behavior\ProductViewsSyncService;
 use App\Services\Commission\CommissionService;
+use App\Services\Recommendation\RecommenderBenchmark;
 use App\Services\Recommendation\RecommenderEvaluator;
 use App\Services\Recommendation\RecommenderScalingSimulator;
 use App\Services\Recommendation\RecommenderTrainer;
@@ -135,6 +136,44 @@ Artisan::command('marketplace:evaluate-recommender', function (RecommenderEvalua
     $best = $result['best'];
     $this->info("Meilleur K (critère hybride) : {$best['k']} -- Hybride=".number_format($best['hybrid_rate'] * 100, 1).'% ALS seul='.number_format($best['als_rate'] * 100, 1).'% Baseline='.number_format($best['pop_rate'] * 100, 1).'%');
 })->purpose('Évalue le moteur par séparation entraînement/test (Hit Rate@10, K sweep)');
+
+Artisan::command('marketplace:benchmark-public {--db= : fichier SQLite au format orders} {--sim= : matrice de contenu .bin} {--simskus= : liste des SKU de la matrice .json} {--seeds=7 : graines séparées par des virgules} {--ks=4,8,12,16} {--binary : ALS sur présence binaire (qty=1), analyse de sensibilité} {--out= : dossier des résultats JSON}', function () {
+    $db = (string) $this->option('db');
+    if ($db === '' || ! is_file($db)) {
+        $this->error('--db doit pointer vers un fichier SQLite existant (la base réelle n\'est jamais utilisée).');
+
+        return self::FAILURE;
+    }
+    config(['database.connections.benchmark' => ['driver' => 'sqlite', 'database' => $db, 'prefix' => '', 'foreign_key_constraints' => false]]);
+
+    $sim = (string) $this->option('sim');
+    $simSkus = (string) $this->option('simskus');
+    $bench = new RecommenderBenchmark(
+        'benchmark',
+        $sim !== '' ? $sim : null,
+        $simSkus !== '' ? $simSkus : null,
+        (float) config('recommender.w_collaborative'),
+        (float) config('recommender.w_content'),
+        fn (string $m) => $this->line($m),
+        (bool) $this->option('binary'),
+    );
+
+    $baskets = $bench->loadBaskets();
+    $ks = array_map('intval', explode(',', (string) $this->option('ks')));
+    $out = (string) $this->option('out');
+    if ($out !== '') {
+        @mkdir($out, 0775, true);
+    }
+
+    foreach (array_map('intval', explode(',', (string) $this->option('seeds'))) as $seed) {
+        $result = $bench->runSeed($baskets, $seed, $ks);
+        $result['finished_at'] = date('c');
+        if ($out !== '') {
+            file_put_contents("$out/seed_$seed.json", json_encode($result, JSON_PRETTY_PRINT));
+        }
+        $this->info("graine $seed terminée en {$result['seconds']} s : K(ALS)={$result['k_als']} K(hybride)={$result['k_hybrid']}");
+    }
+})->purpose('Évalue le moteur sur un jeu public (SQLite) : K sur validation, NDCG/MRR/couverture, ablation');
 
 Artisan::command('marketplace:simulate-recommender-scaling', function (RecommenderScalingSimulator $simulator) {
     $this->warn('SIMULATION : commandes synthétiques générées en mémoire, rien n\'est écrit en base.');
