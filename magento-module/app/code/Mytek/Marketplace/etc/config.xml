@@ -14,6 +14,11 @@
                 <opensearch_url>http://localhost:9201</opensearch_url>
                 <index_prefix>opensearch_index</index_prefix>
             </search>
+            <recommendations>
+                <enabled>1</enabled>
+                <limit>6</limit>
+                <timeout>2</timeout>
+            </recommendations>
         </mytek_marketplace>
     </default>
 </config>

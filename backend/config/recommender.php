@@ -14,6 +14,14 @@ return [
     'w_collaborative' => (float) env('RECOMMENDER_W_COLLABORATIVE', 0.65),
     'w_content' => (float) env('RECOMMENDER_W_CONTENT', 0.35),
 
+    // Affinité de catégorie Magento (item_categories.json, voir CategoryMapBuilder) :
+    // signal indépendant du volume de commandes, absent de la v1.
+    'w_category' => (float) env('RECOMMENDER_W_CATEGORY', 0.6),
+
+    // Rétrécissement β du collaboratif : poids × n / (n + β), n = paniers contenant le produit.
+    // Avec β = 5, un produit acheté une fois ne garde que 17 % du poids, vingt fois 80 %.
+    'support_shrinkage' => (float) env('RECOMMENDER_SUPPORT_SHRINKAGE', 5),
+
     // Taille du vivier de candidats = topK * pool_factor (pour permettre la diversité).
     'pool_factor' => (int) env('RECOMMENDER_POOL_FACTOR', 3),
     'diversity_epsilon' => (float) env('RECOMMENDER_DIVERSITY_EPSILON', 0.15),

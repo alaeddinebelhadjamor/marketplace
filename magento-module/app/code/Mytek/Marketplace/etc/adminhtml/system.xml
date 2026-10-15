@@ -51,6 +51,25 @@
                     <validate>required-entry</validate>
                 </field>
             </group>
+
+            <group id="recommendations" translate="label comment" sortOrder="40" showInDefault="1">
+                <label>Product recommendations</label>
+                <comment>"You may also like" block on the product page, fed by the recommendation engine of the v2 API (GET /api/recommendations).</comment>
+                <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="limit" translate="label comment" type="text" sortOrder="20" showInDefault="1">
+                    <label>Number of products</label>
+                    <comment>Between 1 and 12.</comment>
+                    <validate>required-entry validate-digits validate-digits-range digits-range-1-12</validate>
+                </field>
+                <field id="timeout" translate="label comment" type="text" sortOrder="30" showInDefault="1">
+                    <label>Timeout (seconds)</label>
+                    <comment>Beyond this delay the block is hidden: the product page never waits for the engine.</comment>
+                    <validate>required-entry validate-number validate-greater-than-zero</validate>
+                </field>
+            </group>
         </section>
     </system>
 </config>

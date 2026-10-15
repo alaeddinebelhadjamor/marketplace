@@ -1,0 +1,140 @@
+/* Mytek Marketplace — bloc « Vous aimerez aussi » de la fiche produit */
+
+.mk-reco {
+    clear: both;
+    margin: 40px 0 20px;
+    padding-top: 24px;
+    border-top: 1px solid #e5e5e5;
+    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+.mk-reco__header {
+    margin-bottom: 18px;
+}
+.mk-reco__title {
+    margin: 0 0 4px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #222;
+    text-transform: uppercase;
+}
+.mk-reco__title::after {
+    content: "";
+    display: block;
+    width: 48px;
+    height: 3px;
+    margin-top: 8px;
+    background: #c70a0a;
+}
+.mk-reco__subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: #777;
+}
+
+.mk-reco__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.mk-reco__item {
+    margin: 0;
+}
+.mk-reco__card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 12px;
+    border: 1px solid #ececec;
+    border-radius: 8px;
+    background: #fff;
+    color: inherit;
+    text-decoration: none;
+    transition: box-shadow .2s ease, transform .2s ease, border-color .2s ease;
+}
+.mk-reco__card:hover,
+.mk-reco__card:focus-visible {
+    border-color: #c70a0a;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .08);
+    transform: translateY(-2px);
+    text-decoration: none;
+}
+.mk-reco__media {
+    position: relative;
+    display: block;
+    aspect-ratio: 1 / 1;
+    margin-bottom: 10px;
+}
+.mk-reco__img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+.mk-reco__discount {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 2px 8px;
+    border-radius: 3px;
+    background: #c70a0a;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+}
+.mk-reco__name {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.8em;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #333;
+}
+.mk-reco__price {
+    margin-top: auto;
+    padding-top: 8px;
+}
+.mk-reco__price-final {
+    font-size: 16px;
+    font-weight: 700;
+    color: #c70a0a;
+}
+.mk-reco__price-old {
+    margin-left: 6px;
+    font-size: 12px;
+    color: #999;
+}
+.mk-reco__reason {
+    align-self: flex-start;
+    margin-top: 8px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: #f2f2f2;
+    color: #555;
+    font-size: 11px;
+}
+.mk-reco__reason--hybrid {
+    background: #e8f6ec;
+    color: #1f7a3a;
+}
+.mk-reco__reason--co_view {
+    background: #e9f0fb;
+    color: #24539b;
+}
+.mk-reco__reason--popularity {
+    background: #fff3e0;
+    color: #a35a00;
+}
+
+@media (max-width: 640px) {
+    .mk-reco__list {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    .mk-reco__title {
+        font-size: 18px;
+    }
+}

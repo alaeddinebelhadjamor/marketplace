@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Mytek_Marketplace::css/recommendations.css"/>
+    </head>
     <body>
         <referenceContainer name="product.info.main">
             <block class="Mytek\Marketplace\Block\Seller\Link"
@@ -8,6 +11,12 @@
                    template="Mytek_Marketplace::seller/link.phtml"
                    after="product.info.price"
                    cacheable="false"/>
+        </referenceContainer>
+        <referenceContainer name="content">
+            <block class="Mytek\Marketplace\Block\Product\Recommendations"
+                   name="mytek.marketplace.recommendations"
+                   template="Mytek_Marketplace::product/recommendations.phtml"
+                   after="-"/>
         </referenceContainer>
     </body>
 </page>

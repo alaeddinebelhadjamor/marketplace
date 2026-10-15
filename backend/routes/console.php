@@ -4,6 +4,7 @@ use App\Jobs\SyncDailyOrdersJob;
 use App\Jobs\SyncProductViewsJob;
 use App\Services\Behavior\ProductViewsSyncService;
 use App\Services\Commission\CommissionService;
+use App\Services\Recommendation\CategoryMapBuilder;
 use App\Services\Recommendation\RecommenderBenchmark;
 use App\Services\Recommendation\RecommenderEvaluator;
 use App\Services\Recommendation\RecommenderScalingSimulator;
@@ -84,10 +85,18 @@ Artisan::command('marketplace:statements {period : Mois AAAA-MM}', function (Com
     $this->info("{$count} relevé(s) générés pour {$this->argument('period')}.");
 })->purpose('Génère les relevés de commission d\'un mois');
 
-Artisan::command('marketplace:train-recommender', function (RecommenderTrainer $trainer) {
+Artisan::command('marketplace:train-recommender', function (RecommenderTrainer $trainer, CategoryMapBuilder $categories) {
     $result = $trainer->train();
     $this->info("Modèle ALS entraîné : {$result['n_baskets']} paniers, {$result['n_items']} SKUs.");
-})->purpose('Entraîne le modèle de recommandation (ALS) sur les commandes existantes');
+
+    // Le signal catégorie est facultatif : sans Magento, le moteur garde l'ancienne carte (ou s'en passe).
+    try {
+        $map = $categories->build();
+        $this->info("Carte des catégories : {$map['n_items']} produits, {$map['n_categories']} catégories.");
+    } catch (Throwable $e) {
+        $this->warn('Carte des catégories non mise à jour : '.$e->getMessage());
+    }
+})->purpose('Entraîne le modèle de recommandation (ALS) et reconstruit la carte des catégories');
 
 Artisan::command('marketplace:build-embeddings', function () {
     $node = config('recommender.embeddings.node_binary');
