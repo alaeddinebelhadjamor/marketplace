@@ -1,0 +1,42 @@
+<?php
+/** @var \Mytek\Marketplace\Block\Product\Recommendations $block */
+/** @var \Magento\Framework\Escaper $escaper */
+$items = $block->getItems();
+if (!$items) {
+    return;
+}
+?>
+<section class="mk-reco" aria-labelledby="mk-reco-title">
+    <header class="mk-reco__header">
+        <h2 id="mk-reco-title" class="mk-reco__title"><?= $escaper->escapeHtml(__('You may also like')) ?></h2>
+        <p class="mk-reco__subtitle"><?= $escaper->escapeHtml(__('Selected for you by our recommendation engine')) ?></p>
+    </header>
+    <ol class="mk-reco__list">
+        <?php foreach ($items as $item): ?>
+            <?php $url = $block->getProductUrl($item); $discount = $block->getDiscountPercent($item); $reason = $block->getReasonLabel($item); ?>
+            <li class="mk-reco__item">
+                <a class="mk-reco__card" href="<?= $escaper->escapeUrl($url) ?>">
+                    <span class="mk-reco__media">
+                        <img class="mk-reco__img" src="<?= $escaper->escapeUrl($block->getImageUrl($item)) ?>"
+                             alt="<?= $escaper->escapeHtmlAttr($item['name']) ?>" loading="lazy" width="240" height="240"/>
+                        <?php if ($discount > 0): ?>
+                            <span class="mk-reco__discount">-<?= (int)$discount ?>%</span>
+                        <?php endif; ?>
+                    </span>
+                    <span class="mk-reco__name"><?= $escaper->escapeHtml($item['name']) ?></span>
+                    <span class="mk-reco__price">
+                        <?php if ($item['special_price'] !== null): ?>
+                            <span class="mk-reco__price-final"><?= $escaper->escapeHtml($block->formatPrice($item['special_price'])) ?></span>
+                            <del class="mk-reco__price-old"><?= $escaper->escapeHtml($block->formatPrice($item['price'])) ?></del>
+                        <?php else: ?>
+                            <span class="mk-reco__price-final"><?= $escaper->escapeHtml($block->formatPrice($item['price'])) ?></span>
+                        <?php endif; ?>
+                    </span>
+                    <?php if ($reason !== ''): ?>
+                        <span class="mk-reco__reason mk-reco__reason--<?= $escaper->escapeHtmlAttr($item['source']) ?>"><?= $escaper->escapeHtml($reason) ?></span>
+                    <?php endif; ?>
+                </a>
+            </li>
+        <?php endforeach; ?>
+    </ol>
+</section>

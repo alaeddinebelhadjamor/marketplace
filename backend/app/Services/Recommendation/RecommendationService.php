@@ -150,33 +150,53 @@ class RecommendationService
 
     // ───────────────────────────────────────────────────────────────────
 
-    /** Classement hybride : fusionne collaboratif + contenu pour $sku. */
+    /**
+     * Classement hybride : fusionne collaboratif, contenu et catégorie pour $sku.
+     *
+     * Le poids du collaboratif est multiplié par une confiance n / (n + β),
+     * n étant le nombre de paniers contenant $sku (rétrécissement bayésien) :
+     * un produit acheté une ou deux fois n'a pas de facteurs latents fiables,
+     * le classement s'appuie alors surtout sur le contenu et la catégorie.
+     * Le score est normalisé par la somme des poids des signaux disponibles.
+     */
     private function hybridNeighbors(string $sku, int $topK): array
     {
-        $mfSims = $this->similarityMap($this->loadVectorModel('item_factors.json', 'item_factors'), $sku);
+        $mfModel = $this->loadVectorModel('item_factors.json', 'item_factors');
+        $mfSims = $this->similarityMap($mfModel, $sku);
         $contentSims = $this->similarityMap($this->loadVectorModel('content_embeddings.json', 'embeddings'), $sku);
+        $categorySims = $this->categoryAffinityMap($sku);
 
-        if ($mfSims === null && $contentSims === null) {
+        if ($mfSims === null && $contentSims === null && $categorySims === null) {
             return [];
         }
 
-        $candidates = array_unique([...array_keys($mfSims ?? []), ...array_keys($contentSims ?? [])]);
+        $candidates = array_unique([...array_keys($mfSims ?? []), ...array_keys($contentSims ?? []), ...array_keys($categorySims ?? [])]);
         $candidates = array_values(array_filter($candidates, static fn ($c) => $c !== $sku));
 
-        $wCollaborative = (float) config('recommender.w_collaborative');
-        $wContent = (float) config('recommender.w_content');
+        $confidence = $mfSims === null ? 0.0 : $this->collaborativeConfidence($mfModel, $sku);
+        $weights = [
+            'matrix_factorization' => $mfSims === null ? 0.0 : (float) config('recommender.w_collaborative') * $confidence,
+            'content' => $contentSims === null ? 0.0 : (float) config('recommender.w_content'),
+            'category' => $categorySims === null ? 0.0 : (float) config('recommender.w_category'),
+        ];
+        $totalWeight = array_sum($weights) ?: 1.0;
 
-        $ranked = array_map(static function ($candSku) use ($mfSims, $contentSims, $wCollaborative, $wContent) {
+        $ranked = array_map(static function ($candSku) use ($mfSims, $contentSims, $categorySims, $weights, $totalWeight, $confidence) {
             $mfScore = $mfSims[$candSku] ?? 0.0;
             $contentScore = $contentSims[$candSku] ?? 0.0;
+            $categoryScore = $categorySims[$candSku] ?? 0.0;
 
             return [
                 'sku' => $candSku,
-                'score' => $wCollaborative * $mfScore + $wContent * $contentScore,
+                'score' => ($weights['matrix_factorization'] * $mfScore
+                    + $weights['content'] * $contentScore
+                    + $weights['category'] * $categoryScore) / $totalWeight,
                 'source' => 'hybrid',
                 'detail' => [
                     'matrix_factorization' => isset($mfSims[$candSku]) ? $mfScore : null,
                     'content' => isset($contentSims[$candSku]) ? $contentScore : null,
+                    'category' => $categorySims === null ? null : $categoryScore,
+                    'collaborative_confidence' => round($confidence, 3),
                 ],
             ];
         }, $candidates);
@@ -184,6 +204,59 @@ class RecommendationService
         usort($ranked, static fn ($a, $b) => $b['score'] <=> $a['score']);
 
         return array_slice($ranked, 0, $topK);
+    }
+
+    /**
+     * Confiance dans le collaboratif pour $sku : n / (n + β). Un modèle sans
+     * item_support (entraîné avant son ajout) garde une confiance pleine.
+     */
+    private function collaborativeConfidence(?array $model, string $sku): float
+    {
+        if (! isset($model['item_support'])) {
+            return 1.0;
+        }
+        $support = (int) ($model['item_support'][$sku] ?? 0);
+        $shrinkage = max(0.0, (float) config('recommender.support_shrinkage'));
+
+        return $support + $shrinkage > 0 ? $support / ($support + $shrinkage) : 1.0;
+    }
+
+    /**
+     * Affinité de catégorie (Jaccard des catégories et de leurs ancêtres) de
+     * $sku à chaque produit qui en partage au moins une, ou null si le
+     * produit ou la carte des catégories est absent (voir CategoryMapBuilder).
+     */
+    private function categoryAffinityMap(string $sku): ?array
+    {
+        $path = base_path(config('recommender.models_path').'/item_categories.json');
+        if (! is_file($path)) {
+            return null;
+        }
+
+        $mtime = filemtime($path);
+        $map = Cache::remember("recommender:model:item_categories.json:{$mtime}", now()->addSeconds((int) config('recommender.model_cache_ttl_seconds')), function () use ($path) {
+            $parsed = json_decode((string) file_get_contents($path), true);
+
+            return is_array($parsed['categories'] ?? null) ? $parsed['categories'] : null;
+        });
+
+        if ($map === null || ! isset($map[$sku])) {
+            return null;
+        }
+
+        $own = array_flip($map[$sku]);
+        $affinities = [];
+        foreach ($map as $other => $categories) {
+            if ($other === $sku) {
+                continue;
+            }
+            $shared = count(array_intersect_key($own, array_flip($categories)));
+            if ($shared > 0) {
+                $affinities[$other] = $shared / (count($own) + count($categories) - $shared);
+            }
+        }
+
+        return $affinities;
     }
 
     /** Similarité cosinus de $sku à tous les autres SKUs connus du modèle donné (ou null si absent). */
@@ -249,7 +322,12 @@ class RecommendationService
                 $vectors
             );
 
-            return ['skus' => $parsed['skus'], 'vectors' => $vectors, 'sku_to_index' => $skuToIndex, 'norms' => $norms];
+            $model = ['skus' => $parsed['skus'], 'vectors' => $vectors, 'sku_to_index' => $skuToIndex, 'norms' => $norms];
+            if (is_array($parsed['item_support'] ?? null)) {
+                $model['item_support'] = $parsed['item_support'];
+            }
+
+            return $model;
         });
     }
 

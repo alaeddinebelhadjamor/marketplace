@@ -40,6 +40,8 @@ class RecommenderTrainer
             'n_interactions' => $rows->count(),
             'skus' => $result['skus'],
             'item_factors' => $result['item_factors'],
+            // Nombre de paniers distincts par SKU : confiance du collaboratif au runtime.
+            'item_support' => $rows->groupBy('sku')->map(fn ($lines) => $lines->pluck('order_id')->unique()->count())->all(),
         ];
 
         $path = base_path(config('recommender.models_path').'/item_factors.json');
