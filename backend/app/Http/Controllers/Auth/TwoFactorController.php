@@ -35,6 +35,9 @@ class TwoFactorController extends Controller
     {
         $seller = $request->user();
         $this->requirePassword($request);
+        if ($seller->twoFactor()->first()?->confirmed_at !== null) {
+            throw new ApiException('La double authentification est déjà activée.', 409);
+        }
 
         $tf = $this->twoFactor->enable($seller);
         $url = $this->twoFactor->otpauthUrl($seller, $tf);

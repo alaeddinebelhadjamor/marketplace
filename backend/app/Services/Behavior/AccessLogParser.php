@@ -19,7 +19,7 @@ class AccessLogParser
 
     private const HTML = '#^(\S+) \S+ \S+ \[([^\]]+)\] "GET ([^ "]+\.html) HTTP/[\d.]+" (\d{3}) \S+ "([^"]*)" "([^"]*)"#';
 
-    /** Format de date du journal combiné d'Apache, ex. 03/Oct/2026:10:15:32 +0100. */
+    /** Format de date du journal combiné d'Apache, ex. 15/May/2026:10:15:32 +0100. */
     private const DATE_FORMAT = 'd/M/Y:H:i:s O';
 
     private const EXCLUDED = ['checkout', 'cart', 'customer', 'account', 'catalogsearch', 'wishlist', 'compare'];

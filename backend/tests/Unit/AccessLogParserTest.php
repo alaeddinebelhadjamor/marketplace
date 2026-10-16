@@ -8,7 +8,7 @@ use App\Services\Behavior\AccessLogParser;
 
 function logLine(string $path, int $status = 200, string $ua = 'Mozilla/5.0 (Windows NT 10.0)', string $ref = '-'): string
 {
-    return '41.226.10.5 - - [03/Oct/2026:10:15:32 +0100] "GET '.$path.' HTTP/1.1" '.$status.' 5120 "'.$ref.'" "'.$ua.'"';
+    return '41.226.10.5 - - [15/May/2026:10:15:32 +0100] "GET '.$path.' HTTP/1.1" '.$status.' 5120 "'.$ref.'" "'.$ua.'"';
 }
 
 it('classe une recherche interne (T4-01)', function () {
@@ -27,8 +27,8 @@ it('date l\'événement de l\'heure de la visite écrite par Apache, convertie e
     $search = (new AccessLogParser)->parse(logLine('/myteksearch/index/productsearch/?q=ecran'));
     $page = (new AccessLogParser)->parse(logLine('/ecran-samsung-24.html'));
 
-    expect($search['visited_at'])->toBe('2026-10-03 09:15:32')
-        ->and($page['visited_at'])->toBe('2026-10-03 09:15:32');
+    expect($search['visited_at'])->toBe('2026-05-15 09:15:32')
+        ->and($page['visited_at'])->toBe('2026-05-15 09:15:32');
 });
 
 it('pseudonymise l\'adresse IP par un HMAC salé avec la clé de l\'application', function () {

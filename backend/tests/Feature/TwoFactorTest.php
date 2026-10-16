@@ -30,6 +30,10 @@ it('active la 2FA après confirmation d\'un premier code, avec QR code et codes 
 
     // Le secret est chiffré en base.
     expect(DB::table('seller_two_factor')->value('secret'))->not->toBe($setup['secret']);
+
+    // Une 2FA déjà active ne peut pas être relancée (sinon elle repasserait en attente).
+    $this->postJson('/api/profile/two-factor', ['password' => SellerFactory::PASSWORD])->assertStatus(409);
+    expect($seller->fresh()->hasTwoFactorEnabled())->toBeTrue();
 });
 
 it('exige le mot de passe pour activer, et refuse un mauvais code', function () {
