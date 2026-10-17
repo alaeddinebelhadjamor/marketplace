@@ -104,6 +104,21 @@ it('envoie un lien de réinitialisation sans révéler si le compte existe', fun
     });
 });
 
+it('répond 200 à une seconde demande rapprochée, sans révéler le compte', function () {
+    Notification::fake();
+    $seller = Seller::factory()->create();
+
+    $first = $this->postJson('/api/auth/forgot-password', ['email' => $seller->email])->assertOk();
+    $this->postJson('/api/auth/forgot-password', ['email' => $seller->email])
+        ->assertOk()
+        ->assertExactJson($first->json());
+    $this->postJson('/api/auth/forgot-password', ['email' => 'inconnu@example.com'])
+        ->assertOk()
+        ->assertExactJson($first->json());
+
+    Notification::assertSentToTimes($seller, ResetPassword::class, 1);
+});
+
 it('réinitialise le mot de passe avec le jeton reçu, une seule fois', function () {
     Notification::fake();
     $seller = Seller::factory()->create();

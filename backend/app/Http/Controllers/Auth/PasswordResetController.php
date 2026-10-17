@@ -25,11 +25,9 @@ class PasswordResetController extends Controller
     {
         $request->validate(['email' => ['required', 'email', 'max:255']]);
 
-        $status = Password::broker('sellers')->sendResetLink($request->only('email'));
-
-        if ($status === Password::RESET_THROTTLED) {
-            throw new ApiException('Veuillez patienter avant de redemander un lien.', 429);
-        }
+        // Une demande limitée (RESET_THROTTLED) reçoit la même réponse :
+        // un 429 révélerait que le compte existe.
+        Password::broker('sellers')->sendResetLink($request->only('email'));
 
         return response()->json([
             'message' => 'Si un compte correspond à cet email, un lien de réinitialisation vient d\'être envoyé.',
